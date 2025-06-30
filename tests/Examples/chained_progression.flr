@@ -1,0 +1,141 @@
+// Generated F-Logic code from OO-DSL
+// Module: main
+
+// Class: Person
+// Class-level signatures (inheritable)
+Person[|name => \string, age => \integer, salary => \double, spouse => Person, manager => Person, address => Address, company => Company, getSpouse() => Person, getAddress() => Address, getCompany() => Company, getManager() => Person|].
+
+// Class: Address
+// Class-level signatures (inheritable)
+Address[|street => \string, city => \string, state => \string, zipCode => \string, country => Country|].
+
+// Class: Country
+// Class-level signatures (inheritable)
+Country[|name => \string, code => \string, continent => \string|].
+
+// Class: Company
+// Class-level signatures (inheritable)
+Company[|name => \string, industry => \string, headquarters => Address, ceo => Person, revenue => \double, getCEO() => Person, getHeadquarters() => Address|].
+
+// Object: John
+John:Person.
+John[name -> "John Doe"].
+John[age -> 35].
+John[salary -> 75000].
+John[spouse -> Mary].
+John[manager -> BossManager].
+John[address -> JohnAddress].
+John[company -> TechCorp].
+
+// Object: Mary
+Mary:Person.
+Mary[name -> "Mary Doe"].
+Mary[age -> 32].
+Mary[salary -> 65000].
+Mary[address -> JohnAddress].
+Mary[company -> TechCorp].
+
+// Object: BossManager
+BossManager:Person.
+BossManager[name -> "Boss Manager"].
+BossManager[age -> 45].
+BossManager[salary -> 120000].
+BossManager[company -> TechCorp].
+
+// Object: JohnAddress
+JohnAddress:Address.
+JohnAddress[street -> "123 Main St"].
+JohnAddress[city -> "Tech City"].
+JohnAddress[state -> "CA"].
+JohnAddress[zipCode -> "90210"].
+JohnAddress[country -> USA].
+
+// Object: USA
+USA:Country.
+USA[name -> "United States"].
+USA[code -> "US"].
+USA[continent -> "North America"].
+
+// Object: TechCorp
+TechCorp:Company.
+TechCorp[name -> "TechCorp Inc"].
+TechCorp[industry -> "Technology"].
+TechCorp[headquarters -> TechHQ].
+TechCorp[ceo -> CEO].
+TechCorp[revenue -> 10000000].
+
+// Object: TechHQ
+TechHQ:Address.
+TechHQ[street -> "456 Tech Ave"].
+TechHQ[city -> "Silicon Valley"].
+TechHQ[state -> "CA"].
+TechHQ[country -> USA].
+
+// Object: CEO
+CEO:Person.
+CEO[name -> "CEO Boss"].
+CEO[age -> 50].
+CEO[salary -> 500000].
+
+// Rule: SpouseAge
+@!{SpouseAge} ?X:Person[hasOlderSpouse] :- ?X0:Person[spouse -> ?X1], ?X1[age -> ?V], ?V > 30.
+
+// Rule: SpouseName
+@!{SpouseName} ?X:Person[isMarriedToMary] :- ?X0:Person[spouse -> ?X1], ?X1[name -> ?V], ?V = "Mary Doe".
+
+// Rule: SpouseCity
+@!{SpouseCity} ?X:Person[spouseLivesInTechCity] :- ?X0:Person[spouse -> ?X1], ?X1[address -> ?X2], ?X2[city -> ?V], ?V = "Tech City".
+
+// Rule: CompanyLocation
+@!{CompanyLocation} ?X:Person[worksInSiliconValley] :- ?X0:Person[company -> ?X1], ?X1[headquarters -> ?X2], ?X2[city -> ?V], ?V = "Silicon Valley".
+
+// Rule: SpouseCountry
+@!{SpouseCountry} ?X:Person[spouseIsAmerican] :- ?X0:Person[spouse -> ?X1], ?X1[address -> ?X2], ?X2[country -> ?X3], ?X3[name -> ?V], ?V = "United States".
+
+// Rule: CompanyCountry
+@!{CompanyCountry} ?X:Person[worksForUSCompany] :- ?X0:Person[company -> ?X1], ?X1[headquarters -> ?X2], ?X2[country -> ?X3], ?X3[code -> ?V], ?V = "US".
+
+// Rule: HighValueSpouse
+@!{HighValueSpouse} ?X:Person[hasHighEarningSpouse] :- ?X0:Person[spouse -> ?X1], ?X1[salary -> ?V], ?V > 60000.
+
+// Rule: BigCompany
+@!{BigCompany} ?X:Person[worksForBigCompany] :- ?X0:Person[company -> ?X1], ?X1[revenue -> ?V], ?V > 5000000.
+
+// Rule: PowerCouple
+@!{PowerCouple} ?X:Person[isPowerCouple] :- ?X:Person[salary -> ?V], ?V > 70000, ?X0:Person[spouse -> ?X1], ?X1[salary -> ?V], ?V > 60000.
+
+// Rule: SameCompany
+@!{SameCompany} ?X:Person[worksWithSpouse] :- ?X0:Person[company -> ?X1], ?X1[name -> ?V], ?V = (?X0:Person[spouse -> ?X1], ?X1[company -> ?X2], ?X2[name -> ?X3], ?X3).
+
+// Rule: LivesInGoodArea
+@!{LivesInGoodArea} ?X:Person[livesInTechHub] :- (?X0:Person[address -> ?X1], ?X1[city -> ?V], ?V = "Tech City"; ?X0:Person[address -> ?X1], ?X1[city -> ?V], ?V = "Silicon Valley").
+
+// Rule: HasSeniorRole
+@!{HasSeniorRole} ?X:Person[hasSeniorRole] :- (?X0:Person[manager -> ?X1], ?X1[salary -> ?V], ?V > 100000; ?X0:Person[company -> ?X1], ?X1[ceo -> ?X2], ?X2[name -> ?V], ?V = ?Obj:Person[name -> ?Value]).
+
+// Rule: SpouseFromMethod
+@!{SpouseFromMethod} ?X:Person[methodSpouseOlder] :- ?X:Person[getSpouse() -> ?Result], ?Result = \true, ?Result[age -> ?V], ?V > 30.
+
+// Rule: CompanyFromMethod
+@!{CompanyFromMethod} ?X:Person[methodBigCompany] :- ?X:Person[getCompany() -> ?Result], ?Result = \true, ?Result[revenue -> ?V], ?V > 8000000.
+
+// Rule: ComplexChain
+@!{ComplexChain} ?X:Person[complexChainMatch] :- (Person[getCompany()][getHeadquarters()][city]) = "Silicon Valley".
+
+// Method implementation: Person.getSpouse
+?Obj:Person[getSpouse() -> ?Result] :- ?Self[spouse].
+
+// Method implementation: Person.getAddress
+?Obj:Person[getAddress() -> ?Result] :- ?Self[address].
+
+// Method implementation: Person.getCompany
+?Obj:Person[getCompany() -> ?Result] :- ?Self[company].
+
+// Method implementation: Person.getManager
+?Obj:Person[getManager() -> ?Result] :- ?Self[manager].
+
+// Method implementation: Company.getCEO
+?Obj:Company[getCEO() -> ?Result] :- ?Self[ceo].
+
+// Method implementation: Company.getHeadquarters
+?Obj:Company[getHeadquarters() -> ?Result] :- ?Self[headquarters].

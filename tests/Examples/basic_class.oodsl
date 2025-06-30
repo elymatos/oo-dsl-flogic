@@ -1,0 +1,20 @@
+// tests/Examples/basic_class.oodsl
+// Basic class definition example
+
+class Person {
+    string name;
+    integer age;
+    boolean isVegetarian;
+
+    boolean isAdult();
+}
+
+object John : Person {
+    name = "John Doe";
+    age = 30;
+    isVegetarian = true;
+}
+
+method Person.isAdult() returns boolean {
+    return this.age >= 18;
+}

@@ -1,0 +1,54 @@
+// Generated F-Logic code from OO-DSL
+// Module: main
+
+// Class: LivingBeing
+// Class-level signatures (inheritable)
+LivingBeing[|name => \string, isAlive => \boolean|].
+
+// Class: Person
+Person::LivingBeing.
+// Class-level signatures (inheritable)
+Person[|age => \integer, spouse => Person, children => Person, calculateAgeIn(\integer) => \integer, isAdult() => \boolean|].
+
+// Class: Employee
+Employee::Person.
+// Class-level signatures (inheritable)
+Employee[|employeeId => \string, department => \string, salary => \double, calculateTax() => \double|].
+
+// Object: Mary
+Mary:Person.
+Mary[name -> "Mary Smith"].
+Mary[age -> 28].
+Mary[isAlive -> \true].
+Mary[children -> Alice].
+Mary[children -> Bob].
+
+// Object: Alice
+Alice:Person.
+Alice[name -> "Alice Smith"].
+Alice[age -> 5].
+Alice[isAlive -> \true].
+
+// Object: Bob
+Bob:Person.
+Bob[name -> "Bob Smith"].
+Bob[age -> 8].
+Bob[isAlive -> \true].
+
+// Object: JohnEmployee
+JohnEmployee:Employee.
+JohnEmployee[name -> "John Manager"].
+JohnEmployee[age -> 35].
+JohnEmployee[isAlive -> \true].
+JohnEmployee[employeeId -> "EMP001"].
+JohnEmployee[department -> "Engineering"].
+JohnEmployee[salary -> 75000].
+
+// Method implementation: Person.calculateAgeIn
+?Obj:Person[calculateAgeIn(?BirthYear) -> ?Result] :- 2025 - ?BirthYear.
+
+// Method implementation: Person.isAdult
+?Obj:Person[isAdult() -> ?Result] :- ?Self[age] >= 18.
+
+// Method implementation: Employee.calculateTax
+?Obj:Employee[calculateTax() -> ?Result] :- ?Self[salary] * 0.25.

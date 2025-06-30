@@ -1,0 +1,74 @@
+// Generated F-Logic code from OO-DSL
+// Module: main
+
+// Class: Person
+// Class-level signatures (inheritable)
+Person[|name => \string, age => \integer, spouse => Person, address => Address|].
+
+// Class: Address
+// Class-level signatures (inheritable)
+Address[|city => \string, state => \string, country => Country|].
+
+// Class: Country
+// Class-level signatures (inheritable)
+Country[|name => \string, code => \string|].
+
+// Object: TestPerson
+TestPerson:Person.
+TestPerson[name -> "Test User"].
+TestPerson[age -> 30].
+TestPerson[spouse -> TestSpouse].
+TestPerson[address -> TestAddress].
+
+// Object: TestSpouse
+TestSpouse:Person.
+TestSpouse[name -> "Test Spouse"].
+TestSpouse[age -> 28].
+TestSpouse[address -> SpouseAddress].
+
+// Object: TestAddress
+TestAddress:Address.
+TestAddress[city -> "Test City"].
+TestAddress[state -> "Test State"].
+TestAddress[country -> TestCountry].
+
+// Object: SpouseAddress
+SpouseAddress:Address.
+SpouseAddress[city -> "Spouse City"].
+SpouseAddress[state -> "Spouse State"].
+SpouseAddress[country -> TestCountry].
+
+// Object: TestCountry
+TestCountry:Country.
+TestCountry[name -> "Test Country"].
+TestCountry[code -> "TC"].
+
+// Rule: SimpleProperty
+@!{SimpleProperty} ?X:Person[isOld] :- ?X:Person[age -> ?V], ?V > 25.
+
+// Rule: OneLevel
+@!{OneLevel} ?X:Person[hasOldSpouse] :- ?X0:Person[spouse -> ?X1], ?X1[age -> ?V], ?V > 25.
+
+// Rule: OneLevelName
+@!{OneLevelName} ?X:Person[marriedToTestSpouse] :- ?X0:Person[spouse -> ?X1], ?X1[name -> ?V], ?V = "Test Spouse".
+
+// Rule: TwoLevel
+@!{TwoLevel} ?X:Person[livesInTestCity] :- ?X0:Person[address -> ?X1], ?X1[city -> ?V], ?V = "Test City".
+
+// Rule: TwoLevelSpouse
+@!{TwoLevelSpouse} ?X:Person[spouseLivesInSpouseCity] :- ?X0:Person[spouse -> ?X1], ?X1[address -> ?X2], ?X2[city -> ?V], ?V = "Spouse City".
+
+// Rule: ThreeLevel
+@!{ThreeLevel} ?X:Person[livesInTestCountry] :- ?X0:Person[address -> ?X1], ?X1[country -> ?X2], ?X2[name -> ?V], ?V = "Test Country".
+
+// Rule: ThreeLevelSpouse
+@!{ThreeLevelSpouse} ?X:Person[spouseInTC] :- ?X0:Person[spouse -> ?X1], ?X1[address -> ?X2], ?X2[country -> ?X3], ?X3[code -> ?V], ?V = "TC".
+
+// Rule: ChainedAnd
+@!{ChainedAnd} ?X:Person[qualifiedCouple] :- ?X0:Person[spouse -> ?X1], ?X1[age -> ?V], ?V > 25, ?X0:Person[address -> ?X1], ?X1[city -> ?V], ?V = "Test City".
+
+// Rule: ChainedOr
+@!{ChainedOr} ?X:Person[livesInRightPlace] :- (?X0:Person[address -> ?X1], ?X1[city -> ?V], ?V = "Test City"; ?X0:Person[spouse -> ?X1], ?X1[address -> ?X2], ?X2[city -> ?V], ?V = "Spouse City").
+
+// Rule: ComplexChained
+@!{ComplexChained} ?X:Person[sameCountryAsSpouse] :- ?X0:Person[spouse -> ?X1], ?X1[address -> ?X2], ?X2[country -> ?X3], ?X3[name -> ?V], ?V = (?X0:Person[address -> ?X1], ?X1[country -> ?X2], ?X2[name -> ?X3], ?X3).

@@ -1,0 +1,57 @@
+// Generated F-Logic code from OO-DSL
+// Module: main
+
+// Class: Family
+// Class-level signatures (inheritable)
+Family[|members{2..10} => Person, parents{1..2} => Person, children => \list, familyName => \string, parentCount => \integer, childCount => \integer, isHappy => \boolean, isLarge => \boolean|].
+
+// Class: Company
+// Class-level signatures (inheritable)
+Company[|name => \string, employees => Employee, totalBudget => \double|].
+
+// Class: Employee
+// Class-level signatures (inheritable)
+Employee[|employeeId => \string, department => \string, salary => \double, age => \integer, isAdult => \boolean, isHighEarner => \boolean, isSenior => \boolean|].
+
+// Object: SmithFamily
+SmithFamily:Family.
+SmithFamily[familyName -> "Smith"].
+SmithFamily[members -> John].
+SmithFamily[members -> Mary].
+SmithFamily[members -> Alice].
+SmithFamily[members -> Bob].
+SmithFamily[parents -> John].
+SmithFamily[parents -> Mary].
+SmithFamily[children -> Alice].
+SmithFamily[children -> Bob].
+SmithFamily[parentCount -> 2].
+SmithFamily[childCount -> 2].
+
+// Object: TechCorp
+TechCorp:Company.
+TechCorp[name -> "TechCorp Inc"].
+TechCorp[employees -> JohnEmployee].
+TechCorp[totalBudget -> 1000000].
+
+// Object: JohnEmployee
+JohnEmployee:Employee.
+JohnEmployee[employeeId -> "EMP001"].
+JohnEmployee[department -> "Engineering"].
+JohnEmployee[salary -> 75000].
+JohnEmployee[age -> 35].
+JohnEmployee[isAdult -> \true].
+
+// Rule: HappyFamily
+@!{HappyFamily} ?X:Family[isHappy] :- ?X:Family[parentCount -> ?V], ?V = 2.
+
+// Rule: HighEarner
+@!{HighEarner} ?X:Employee[isHighEarner] :- ?X:Employee[salary -> ?V], ?V > 70000.
+
+// Rule: SeniorEmployee
+@!{SeniorEmployee} ?X:Employee[isSenior] :- ?X:Employee[age -> ?V], ?V > 30.
+
+// Rule: LargeFamily
+@!{LargeFamily} ?X:Family[isLarge] :- ?X:Family[childCount -> ?V], ?V >= 3.
+
+// Rule: AdultEmployee
+@!{AdultEmployee} ?X:Employee[isAdult] :- ?X:Employee[age -> ?V], ?V >= 18.

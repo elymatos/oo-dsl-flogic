@@ -1,0 +1,40 @@
+// Generated F-Logic code from OO-DSL
+// Module: main
+
+// Class: Person
+// Class-level signatures (inheritable)
+Person[|name => \string, age => \integer, salary => \double, isActive => \boolean, isAdult() => \boolean, isSenior() => \boolean, isOlderThan(\integer) => \boolean|].
+
+// Object: TestPerson
+TestPerson:Person.
+TestPerson[name -> "Test User"].
+TestPerson[age -> 30].
+TestPerson[salary -> 50000].
+TestPerson[isActive -> \true].
+
+// Rule: TestMethodCall
+@!{TestMethodCall} ?X:Person[canWork] :- ?X:Person[isAdult() -> ?Result], ?Result = \true.
+
+// Rule: TestMethodAnd
+@!{TestMethodAnd} ?X:Person[isEligible] :- ?X:Person[isAdult() -> ?Result], ?Result = \true, ?X:Person[isActive -> ?V], ?V = \true.
+
+// Rule: TestMethodOr
+@!{TestMethodOr} ?X:Person[hasAdvantage] :- (?X:Person[isSenior() -> ?Result], ?Result = \true; ?X:Person[salary -> ?V], ?V > 60000).
+
+// Rule: TestMultipleMethods
+@!{TestMultipleMethods} ?X:Person[isExperienced] :- ?X:Person[isAdult() -> ?Result], ?Result = \true, ?X:Person[isSenior() -> ?Result], ?Result = \true.
+
+// Rule: TestMethodWithParam
+@!{TestMethodWithParam} ?X:Person[isMatture] :- ?X:Person[isOlderThan() -> ?Result], ?Result = \true.
+
+// Rule: TestComplex
+@!{TestComplex} ?X:Person[isQualified] :- ?X:Person[isAdult() -> ?Result], ?Result = \true, (?X:Person[isSenior() -> ?Result], ?Result = \true; ?X:Person[salary -> ?V], ?V > 55000).
+
+// Method implementation: Person.isAdult
+?Obj:Person[isAdult() -> ?Result] :- ?Self[age] >= 18.
+
+// Method implementation: Person.isSenior
+?Obj:Person[isSenior() -> ?Result] :- ?Self[age] >= 50.
+
+// Method implementation: Person.isOlderThan
+?Obj:Person[isOlderThan(?TargetAge) -> ?Result] :- ?Self[age] > ?TargetAge.

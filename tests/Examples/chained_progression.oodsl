@@ -1,0 +1,227 @@
+// Chained Property Access Example
+// Testing chained property and method access
+
+class Person {
+    string name;
+    integer age;
+    float salary;
+    Person spouse;
+    Person manager;
+    Address address;
+    Company company;
+
+    // Methods that return objects
+    Person getSpouse();
+    Address getAddress();
+    Company getCompany();
+    Person getManager();
+}
+
+class Address {
+    string street;
+    string city;
+    string state;
+    string zipCode;
+    Country country;
+}
+
+class Country {
+    string name;
+    string code;
+    string continent;
+}
+
+class Company {
+    string name;
+    string industry;
+    Address headquarters;
+    Person ceo;
+    float revenue;
+
+    Person getCEO();
+    Address getHeadquarters();
+}
+
+// Test objects
+object John : Person {
+    name = "John Doe";
+    age = 35;
+    salary = 75000.0;
+    spouse = Mary;
+    manager = BossManager;
+    address = JohnAddress;
+    company = TechCorp;
+}
+
+object Mary : Person {
+    name = "Mary Doe";
+    age = 32;
+    salary = 65000.0;
+    address = JohnAddress;
+    company = TechCorp;
+}
+
+object BossManager : Person {
+    name = "Boss Manager";
+    age = 45;
+    salary = 120000.0;
+    company = TechCorp;
+}
+
+object JohnAddress : Address {
+    street = "123 Main St";
+    city = "Tech City";
+    state = "CA";
+    zipCode = "90210";
+    country = USA;
+}
+
+object USA : Country {
+    name = "United States";
+    code = "US";
+    continent = "North America";
+}
+
+object TechCorp : Company {
+    name = "TechCorp Inc";
+    industry = "Technology";
+    headquarters = TechHQ;
+    ceo = CEO;
+    revenue = 10000000.0;
+}
+
+object TechHQ : Address {
+    street = "456 Tech Ave";
+    city = "Silicon Valley";
+    state = "CA";
+    country = USA;
+}
+
+object CEO : Person {
+    name = "CEO Boss";
+    age = 50;
+    salary = 500000.0;
+}
+
+// Level 1: Simple chained property access (NEW!)
+rule SpouseAge {
+    if (Person.spouse.age > 30) {
+        Person.hasOlderSpouse = true;
+    }
+}
+
+rule SpouseName {
+    if (Person.spouse.name == "Mary Doe") {
+        Person.isMarriedToMary = true;
+    }
+}
+
+// Level 2: Deeper chained access (NEW!)
+rule SpouseCity {
+    if (Person.spouse.address.city == "Tech City") {
+        Person.spouseLivesInTechCity = true;
+    }
+}
+
+rule CompanyLocation {
+    if (Person.company.headquarters.city == "Silicon Valley") {
+        Person.worksInSiliconValley = true;
+    }
+}
+
+// Level 3: Very deep chained access (NEW!)
+rule SpouseCountry {
+    if (Person.spouse.address.country.name == "United States") {
+        Person.spouseIsAmerican = true;
+    }
+}
+
+rule CompanyCountry {
+    if (Person.company.headquarters.country.code == "US") {
+        Person.worksForUSCompany = true;
+    }
+}
+
+// Level 4: Chained access with comparisons (NEW!)
+rule HighValueSpouse {
+    if (Person.spouse.salary > 60000.0) {
+        Person.hasHighEarningSpouse = true;
+    }
+}
+
+rule BigCompany {
+    if (Person.company.revenue > 5000000.0) {
+        Person.worksForBigCompany = true;
+    }
+}
+
+// Level 5: Complex conditions with chained access (NEW!)
+rule PowerCouple {
+    if (Person.salary > 70000.0 && Person.spouse.salary > 60000.0) {
+        Person.isPowerCouple = true;
+    }
+}
+
+rule SameCompany {
+    if (Person.company.name == Person.spouse.company.name) {
+        Person.worksWithSpouse = true;
+    }
+}
+
+// Level 6: Chained access with OR conditions (NEW!)
+rule LivesInGoodArea {
+    if (Person.address.city == "Tech City" || Person.address.city == "Silicon Valley") {
+        Person.livesInTechHub = true;
+    }
+}
+
+rule HasSeniorRole {
+    if (Person.manager.salary > 100000.0 || Person.company.ceo.name == Person.name) {
+        Person.hasSeniorRole = true;
+    }
+}
+
+// Level 7: Method calls in chains (NEW!)
+rule SpouseFromMethod {
+    if (Person.getSpouse().age > 30) {
+        Person.methodSpouseOlder = true;
+    }
+}
+
+rule CompanyFromMethod {
+    if (Person.getCompany().revenue > 8000000.0) {
+        Person.methodBigCompany = true;
+    }
+}
+
+// Level 8: Nested method and property chains (NEW!)
+rule ComplexChain {
+    if (Person.getCompany().getHeadquarters().city == "Silicon Valley") {
+        Person.complexChainMatch = true;
+    }
+}
+
+// Method implementations
+method Person.getSpouse() returns Person {
+    return this.spouse;
+}
+
+method Person.getAddress() returns Address {
+    return this.address;
+}
+
+method Person.getCompany() returns Company {
+    return this.company;
+}
+
+method Person.getManager() returns Person {
+    return this.manager;
+}
+
+method Company.getCEO() returns Person {
+    return this.ceo;
+}
+
+method Company.getHeadquarters() returns Address {
+    return this.headquarters;
+}

@@ -1,0 +1,68 @@
+// Boolean Expression Progression
+// From simple to complex expressions
+
+class Person {
+    string name;
+    integer age;
+    float salary;
+    string department;
+    boolean isActive;
+    boolean hasGoodRating;
+}
+
+object TestPerson : Person {
+    name = "Test User";
+    age = 30;
+    salary = 50000.0;
+    department = "Engineering";
+    isActive = true;
+    hasGoodRating = true;
+}
+
+// Level 1: Simple conditions (already working)
+rule SimpleAge {
+    if (Person.age > 25) {
+        Person.isExperienced = true;
+    }
+}
+
+rule SimpleSalary {
+    if (Person.salary > 40000.0) {
+        Person.isWellPaid = true;
+    }
+}
+
+// Level 2: Simple AND conditions (NEW!)
+rule SimpleAnd {
+    if (Person.age > 25 && Person.salary > 40000.0) {
+        Person.isGoodCandidate = true;
+    }
+}
+
+// Level 3: Simple OR conditions (NEW!)
+rule SimpleOr {
+    if (Person.age < 25 || Person.salary > 80000.0) {
+        Person.isSpecialCase = true;
+    }
+}
+
+// Level 4: Multiple AND conditions (NEW!)
+rule MultipleAnd {
+    if (Person.age > 25 && Person.salary > 40000.0 && Person.isActive == true) {
+        Person.isQualified = true;
+    }
+}
+
+// Level 5: Mixed AND/OR with parentheses (NEW!)
+rule MixedConditions {
+    if (Person.isActive == true && (Person.age > 30 || Person.salary > 60000.0)) {
+        Person.isEligible = true;
+    }
+}
+
+// Level 6: Complex nested conditions (NEW!)
+rule ComplexNested {
+    if ((Person.age >= 25 && Person.age <= 50) && (Person.salary > 45000.0 || Person.department == "Engineering")) {
+        Person.isPrimeCandidate = true;
+    }
+}

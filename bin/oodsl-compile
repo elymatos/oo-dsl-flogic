@@ -1,0 +1,39 @@
+#!/usr/bin/env php
+<?php
+
+// Find the autoloader
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+    __DIR__ . '/../../../../autoload.php',
+];
+
+$autoloadFound = false;
+foreach ($autoloadPaths as $autoloadPath) {
+    if (file_exists($autoloadPath)) {
+        require_once $autoloadPath;
+        $autoloadFound = true;
+        break;
+    }
+}
+
+if (!$autoloadFound) {
+    fwrite(STDERR, "Error: Could not find autoloader. Please run 'composer install'.\n");
+    exit(1);
+}
+
+use OODSLToFLogic\CLI\CompilerCommand;
+
+// Handle uncaught exceptions
+set_exception_handler(function ($exception) {
+    fwrite(STDERR, "Fatal error: " . $exception->getMessage() . "\n");
+    if (getenv('OODSL_DEBUG')) {
+        fwrite(STDERR, $exception->getTraceAsString() . "\n");
+    }
+    exit(1);
+});
+
+// Run the compiler
+$compiler = new CompilerCommand();
+$exitCode = $compiler->run($argv);
+exit($exitCode);
