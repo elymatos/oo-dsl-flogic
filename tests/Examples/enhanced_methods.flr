@@ -1,0 +1,24 @@
+// Generated F-Logic code from OO-DSL
+// Module: main
+
+// Class: Person
+// Class-level signatures (inheritable)
+Person[|name => \string, age => \integer, salary => \double, isAdult() => \boolean, getFullName() => \string|].
+
+// Method implementation: Person.isAdult
+?Obj:Person[isAdult() -> ?Result] :- ?Self[age] >= 18.
+
+// Method implementation: Person.getFullName
+?Obj:Person[getFullName() -> ?Result] :- ?Self[name].
+
+// Object: John
+John:Person.
+John[name -> "John Doe"].
+John[age -> 30].
+John[salary -> 50000].
+
+// Rule: TestInsideMethod
+@!{TestInsideMethod} ?X:Person[isExperienced] :- Person[getAge()] > 25.
+
+// Rule: TestOutsideMethod
+@!{TestOutsideMethod} ?X:Person[canVote] :- Person[isAdult()] = \true.

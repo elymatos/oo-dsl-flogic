@@ -1,0 +1,118 @@
+// Chained Property Access Progression
+// From simple to complex chained access
+
+class Person {
+    string name;
+    integer age;
+    Person spouse;
+    Address address;
+}
+
+class Address {
+    string city;
+    string state;
+    Country country;
+}
+
+class Country {
+    string name;
+    string code;
+}
+
+// Test objects
+object TestPerson : Person {
+    name = "Test User";
+    age = 30;
+    spouse = TestSpouse;
+    address = TestAddress;
+}
+
+object TestSpouse : Person {
+    name = "Test Spouse";
+    age = 28;
+    address = SpouseAddress;
+}
+
+object TestAddress : Address {
+    city = "Test City";
+    state = "Test State";
+    country = TestCountry;
+}
+
+object SpouseAddress : Address {
+    city = "Spouse City";
+    state = "Spouse State";
+    country = TestCountry;
+}
+
+object TestCountry : Country {
+    name = "Test Country";
+    code = "TC";
+}
+
+// Step 1: Simple property access (already working)
+rule SimpleProperty {
+    if (Person.age > 25) {
+        Person.isOld = true;
+    }
+}
+
+// Step 2: One level chained access (NEW!)
+rule OneLevel {
+    if (Person.spouse.age > 25) {
+        Person.hasOldSpouse = true;
+    }
+}
+
+rule OneLevelName {
+    if (Person.spouse.name == "Test Spouse") {
+        Person.marriedToTestSpouse = true;
+    }
+}
+
+// Step 3: Two level chained access (NEW!)
+rule TwoLevel {
+    if (Person.address.city == "Test City") {
+        Person.livesInTestCity = true;
+    }
+}
+
+rule TwoLevelSpouse {
+    if (Person.spouse.address.city == "Spouse City") {
+        Person.spouseLivesInSpouseCity = true;
+    }
+}
+
+// Step 4: Three level chained access (NEW!)
+rule ThreeLevel {
+    if (Person.address.country.name == "Test Country") {
+        Person.livesInTestCountry = true;
+    }
+}
+
+rule ThreeLevelSpouse {
+    if (Person.spouse.address.country.code == "TC") {
+        Person.spouseInTC = true;
+    }
+}
+
+// Step 5: Chained access with AND (NEW!)
+rule ChainedAnd {
+    if (Person.spouse.age > 25 && Person.address.city == "Test City") {
+        Person.qualifiedCouple = true;
+    }
+}
+
+// Step 6: Chained access with OR (NEW!)
+rule ChainedOr {
+    if (Person.address.city == "Test City" || Person.spouse.address.city == "Spouse City") {
+        Person.livesInRightPlace = true;
+    }
+}
+
+// Step 7: Complex chained combinations (NEW!)
+rule ComplexChained {
+    if (Person.spouse.address.country.name == Person.address.country.name) {
+        Person.sameCountryAsSpouse = true;
+    }
+}

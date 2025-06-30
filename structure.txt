@@ -1,0 +1,43 @@
+oo-dsl-flogic/
+├── composer.json
+├── README.md
+├── bin/
+│   └── oodsl-compile
+├── src/
+│   ├── Parser/
+│   │   ├── Grammar.peg
+│   │   ├── Parser.php
+│   │   └── TokenType.php
+│   ├── AST/
+│   │   ├── Node.php
+│   │   ├── ClassNode.php
+│   │   ├── ObjectNode.php
+│   │   ├── MethodNode.php
+│   │   ├── PropertyNode.php
+│   │   ├── RuleNode.php
+│   │   ├── TypeNode.php
+│   │   └── ExpressionNode.php
+│   ├── CodeGen/
+│   │   ├── FLogicGenerator.php
+│   │   ├── TypeMapper.php
+│   │   └── ModuleGenerator.php
+│   ├── Analysis/
+│   │   ├── SemanticAnalyzer.php
+│   │   └── TypeChecker.php
+│   ├── Utils/
+│   │   ├── ErrorHandler.php
+│   │   ├── SourceLocation.php
+│   │   └── Logger.php
+│   └── CLI/
+│       └── CompilerCommand.php
+├── tests/
+│   ├── Unit/
+│   ├── Integration/
+│   └── Examples/
+│       ├── basic_class.oodsl
+│       ├── inheritance.oodsl
+│       └── complex_rules.oodsl
+└── docs/
+    ├── grammar.md
+    ├── examples.md
+    └── flogic_mapping.md

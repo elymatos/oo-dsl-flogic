@@ -1,0 +1,82 @@
+// tests/Examples/complex_rules.oodsl
+// Complex rules and logic example
+
+class Family {
+    set<Person> members{2..10};
+    Person parents{1..2};
+    list<Person> children;
+    string familyName;
+    integer parentCount;
+    integer childCount;
+    boolean isHappy;
+    boolean isLarge;
+}
+
+class Company {
+    string name;
+    set<Employee> employees;
+    float totalBudget;
+}
+
+class Employee {
+    string employeeId;
+    string department;
+    float salary;
+    integer age;
+    boolean isAdult;
+    boolean isHighEarner;
+    boolean isSenior;
+}
+
+object SmithFamily : Family {
+    familyName = "Smith";
+    members += {John, Mary, Alice, Bob};
+    parents += {John, Mary};
+    children += {Alice, Bob};
+    parentCount = 2;
+    childCount = 2;
+}
+
+object TechCorp : Company {
+    name = "TechCorp Inc";
+    employees += {JohnEmployee};
+    totalBudget = 1000000.0;
+}
+
+object JohnEmployee : Employee {
+    employeeId = "EMP001";
+    department = "Engineering";
+    salary = 75000.0;
+    age = 35;
+    isAdult = true;
+}
+
+rule HappyFamily {
+    if (Family.parentCount == 2) {
+        Family.isHappy = true;
+    }
+}
+
+rule HighEarner {
+    if (Employee.salary > 70000.0) {
+        Employee.isHighEarner = true;
+    }
+}
+
+rule SeniorEmployee {
+    if (Employee.age > 30) {
+        Employee.isSenior = true;
+    }
+}
+
+rule LargeFamily {
+    if (Family.childCount >= 3) {
+        Family.isLarge = true;
+    }
+}
+
+rule AdultEmployee {
+    if (Employee.age >= 18) {
+        Employee.isAdult = true;
+    }
+}

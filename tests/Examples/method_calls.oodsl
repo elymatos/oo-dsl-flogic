@@ -1,0 +1,78 @@
+// Method Calls Progression Example
+// Testing from simple to complex method calls
+
+class Person {
+    string name;
+    integer age;
+    float salary;
+    boolean isActive;
+
+    // Simple boolean methods
+    boolean isAdult();
+    boolean isSenior();
+
+    // Method with parameter
+    boolean isOlderThan(integer targetAge);
+}
+
+object TestPerson : Person {
+    name = "Test User";
+    age = 30;
+    salary = 50000.0;
+    isActive = true;
+}
+
+// Step 1: Simple method call in condition (NEW!)
+rule TestMethodCall {
+    if (Person.isAdult()) {
+        Person.canWork = true;
+    }
+}
+
+// Step 2: Method call with AND (NEW!)
+rule TestMethodAnd {
+    if (Person.isAdult() && Person.isActive == true) {
+        Person.isEligible = true;
+    }
+}
+
+// Step 3: Method call with OR (NEW!)
+rule TestMethodOr {
+    if (Person.isSenior() || Person.salary > 60000.0) {
+        Person.hasAdvantage = true;
+    }
+}
+
+// Step 4: Multiple method calls (NEW!)
+rule TestMultipleMethods {
+    if (Person.isAdult() && Person.isSenior()) {
+        Person.isExperienced = true;
+    }
+}
+
+// Step 5: Method with parameter (NEW!)
+rule TestMethodWithParam {
+    if (Person.isOlderThan(25)) {
+        Person.isMatture = true;
+    }
+}
+
+// Step 6: Complex combination (NEW!)
+rule TestComplex {
+    if (Person.isAdult() && (Person.isSenior() || Person.salary > 55000.0)) {
+        Person.isQualified = true;
+    }
+}
+
+// Method implementations
+method Person.isAdult() returns boolean {
+    return this.age >= 18;
+}
+
+method Person.isSenior() returns boolean {
+    return this.age >= 50;
+}
+
+method Person.isOlderThan(integer targetAge) returns boolean {
+    return this.age > targetAge;
+}
