@@ -206,6 +206,9 @@ class Basic {
 			}
 
 		}
+        print_r("** result \n");
+        print_r($result);
+        print_r($storetag . "\n");
 
 		if ($storetag && !$storecalled) {
 			if (!isset($result[$storetag])) {
