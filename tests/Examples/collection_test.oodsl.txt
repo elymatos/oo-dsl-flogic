@@ -1,0 +1,61 @@
+// Test file: examples/collection_test.oodsl
+// This should work after implementing the simple collection methods
+
+class Family {
+    set<Person> children;
+    string surname;
+}
+
+class Person {
+    string name;
+    integer age;
+}
+
+object SmithFamily : Family {
+    surname = "Smith";
+    children += {alice, bob, charlie};
+}
+
+object alice : Person {
+    name = "Alice";
+    age = 16;
+}
+
+object bob : Person {
+    name = "Bob";
+    age = 14;
+}
+
+object charlie : Person {
+    name = "Charlie";
+    age = 12;
+}
+
+// Test basic count
+rule LargeFamily {
+    if (Family.children.count() > 2) {
+        Family.isLarge = true;
+    }
+}
+
+rule SmallFamily {
+    if (Family.children.size() <= 2) {
+        Family.isSmall = true;
+    }
+}
+
+
+// Expected F-Logic output:
+// @!{LargeFamily} ?Family:Family[isLarge] :- |Family.children| > 2.
+
+// After this works, you can test more complex examples:
+
+// Test with property access
+rule SmithFamilySize {
+    if (SmithFamily.children.count() == 3) {
+        SmithFamily.hasThreeKids = true;
+    }
+}
+
+// Expected F-Logic output:
+// @!{SmithFamilySize} SmithFamily[hasThreeKids] :- |SmithFamily.children| == 3.

@@ -8,156 +8,459 @@ use OODSLToFLogic\AST\ObjectNode;
 use OODSLToFLogic\AST\MethodNode;
 use OODSLToFLogic\AST\RuleNode;
 use OODSLToFLogic\AST\PropertyNode;
-use OODSLToFLogic\AST\MethodSignatureNode;
+use OODSLToFLogic\AST\AssignmentNode;
+use OODSLToFLogic\AST\ParameterNode;
 use OODSLToFLogic\Utils\SourceLocation;
 
 class OODSLParser extends Packrat {
 
     /*!* OODSLParser
 
-    Program: _ Statement _
+    Program: _ Declaration* _
         function Program__finalise(&$result) {
             $location = new SourceLocation(1, 1, $this->currentFilename ?? null);
-            return new ProgramNode(array($result), $location);
+            $statements = array();
+
+            // Extract statements from the result
+            if (isset($result['Declaration'])) {
+                if (is_array($result['Declaration'])) {
+                    foreach ($result['Declaration'] as $item) {
+                        if (is_object($item)) {
+                            $statements[] = $item;
+                        }
+                    }
+                } elseif (is_object($result['Declaration'])) {
+                    $statements[] = $result['Declaration'];
+                }
+            }
+
+            // Fallback: look for any object in the result
+            if (empty($statements) && is_array($result)) {
+                foreach ($result as $key => $item) {
+                    if (is_object($item) && (
+                        $item instanceof ClassNode ||
+                        $item instanceof ObjectNode ||
+                        $item instanceof MethodNode ||
+                        $item instanceof RuleNode
+                    )) {
+                        $statements[] = $item;
+                    } elseif (is_array($item)) {
+                        foreach ($item as $subItem) {
+                            if (is_object($subItem)) {
+                                $statements[] = $subItem;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return new ProgramNode($statements, $location);
         }
 
-    Statement: ClassDeclaration | ObjectDeclaration | MethodDefinition | RuleDefinition | SimpleExpression
+    Declaration: ClassDecl | ObjectDecl | MethodDecl | RuleDecl
 
-    ClassDeclaration: "class" __ Identifier InheritanceClause? _ "{" _ ClassBody _ "}"
-        function ClassDeclaration__finalise(&$result) {
+    ClassDecl: "class" __ Identifier Inheritance? _ "{" _ ClassBody _ "}"
+        function ClassDecl__finalise(&$result) {
             $location = new SourceLocation(1, 1);
+            $text = $result['text'] ?? '';
+
+            // Extract class name from the text
+            preg_match('/class\s+(\w+)/', $text, $matches);
+            $className = $matches[1] ?? 'Unknown';
+
+            // Extract inheritance info if present
+            $parentClass = null;
+            $isStructure = false;
+            if (isset($result['Inheritance'])) {
+                // Parse inheritance information
+                $inheritance = $result['Inheritance'];
+                if (is_array($inheritance) && isset($inheritance['text'])) {
+                    if (preg_match('/inherits\s+(structure\s+)?from\s+(\w+)/', $inheritance['text'], $inheritMatches)) {
+                        $isStructure = !empty($inheritMatches[1]);
+                        $parentClass = $inheritMatches[2];
+                    }
+                }
+            }
+
+            // Extract properties and methods from ClassBody
+            $properties = [];
+            $methods = [];
+
+            if (isset($result['ClassBody'])) {
+                $classBody = $result['ClassBody'];
+                if (is_array($classBody)) {
+                    foreach ($classBody as $item) {
+                        if ($item instanceof PropertyNode) {
+                            $properties[] = $item;
+                        } elseif ($item instanceof MethodNode) {
+                            $methods[] = $item;
+                        }
+                    }
+                }
+            }
+
             return new ClassNode(
-                $result['text'],
-                null,
-                false,
-                array(),
-                array(),
+                $className,
+                $parentClass,
+                $isStructure,
+                $properties,
+                $methods,
                 $location
             );
         }
 
-    InheritanceClause: __ "inherits" InheritanceType? __ "from" __ Identifier
+    Inheritance: __ "inherits" StructureWord? __ "from" __ Identifier
 
-    InheritanceType: "structure"
+    StructureWord: "structure"
 
-    ObjectDeclaration: "object" __ Identifier _ ":" _ Identifier _ "{" _ ObjectBody _ "}"
-        function ObjectDeclaration__finalise(&$result) {
+    ObjectDecl: "object" __ Identifier _ ":" _ Identifier _ "{" _ ObjectBody _ "}"
+        function ObjectDecl__finalise(&$result) {
             $location = new SourceLocation(1, 1);
+            $text = $result['text'] ?? '';
+
+            // Extract object name and class name
+            preg_match('/object\s+(\w+)\s*:\s*(\w+)/', $text, $matches);
+            $objectName = $matches[1] ?? 'Unknown';
+            $className = $matches[2] ?? 'Unknown';
+
+            // Extract assignments from ObjectBody
+            $assignments = [];
+            if (isset($result['ObjectBody'])) {
+                $objectBody = $result['ObjectBody'];
+                if (is_array($objectBody)) {
+                    foreach ($objectBody as $item) {
+                        if ($item instanceof AssignmentNode) {
+                            $assignments[] = $item;
+                        }
+                    }
+                }
+            }
+
             return new ObjectNode(
-                $result['text'],
-                $result['text'],
-                array(),
+                $objectName,
+                $className,
+                $assignments,
                 $location
             );
         }
 
-    MethodDefinition: "method" __ QualifiedIdentifier _ "(" _ ParameterList? _ ")" __ "returns" __ Type _ "{" _ MethodBody _ "}"
-        function MethodDefinition__finalise(&$result) {
+    MethodDecl: "method" __ DottedName _ "(" _ Params? _ ")" __ "returns" __ DataType _ "{" _ MethodBody _ "}"
+        function MethodDecl__finalise(&$result) {
             $location = new SourceLocation(1, 1);
+            $text = $result['text'] ?? '';
+
+            // Extract method name
+            preg_match('/method\s+([\w.]+)/', $text, $matches);
+            $methodName = $matches[1] ?? 'Unknown';
+
+            // Extract parameters
+            $parameters = [];
+            if (isset($result['Params'])) {
+                $params = $result['Params'];
+                if (is_array($params)) {
+                    foreach ($params as $param) {
+                        if ($param instanceof ParameterNode) {
+                            $parameters[] = $param;
+                        }
+                    }
+                }
+            }
+
+            // Extract return type
+            $returnType = 'boolean'; // default
+            if (isset($result['DataType'])) {
+                $dataType = $result['DataType'];
+                if (is_array($dataType) && isset($dataType['text'])) {
+                    $returnType = trim($dataType['text']);
+                }
+            }
+
+            // Extract method body
+            $body = [];
+            if (isset($result['MethodBody'])) {
+                $methodBody = $result['MethodBody'];
+                if (is_array($methodBody)) {
+                    $body = $methodBody;
+                }
+            }
+
             return new MethodNode(
-                $result['text'],
-                array(),
-                $result['text'],
-                array(),
+                $methodName,
+                $parameters,
+                $returnType,
+                $body,
                 $location
             );
         }
 
-    RuleDefinition: "rule" __ Identifier _ "{" _ RuleBody _ "}"
-        function RuleDefinition__finalise(&$result) {
+    RuleDecl: "rule" __ Identifier _ "{" _ RuleBody _ "}"
+        function RuleDecl__finalise(&$result) {
             $location = new SourceLocation(1, 1);
+            $text = $result['text'] ?? '';
+
+            // Extract rule name
+            preg_match('/rule\s+(\w+)/', $text, $matches);
+            $ruleName = $matches[1] ?? 'Unknown';
+
+            // Extract rule conditions
+            $conditions = [];
+            if (isset($result['RuleBody'])) {
+                $ruleBody = $result['RuleBody'];
+                if (is_array($ruleBody)) {
+                    $conditions = $ruleBody;
+                }
+            }
+
             return new RuleNode(
-                $result['text'],
-                array(),
+                $ruleName,
+                $conditions,
                 $location
             );
         }
 
-    ParameterList: Parameter (_ "," _ Parameter)*
+    Params: Param (_ "," _ Param)*
+        function Params__finalise(&$result) {
+            $params = [];
+            if (isset($result['Param'])) {
+                if (is_array($result['Param'])) {
+                    foreach ($result['Param'] as $param) {
+                        if ($param instanceof ParameterNode) {
+                            $params[] = $param;
+                        }
+                    }
+                } else {
+                    $params[] = $result['Param'];
+                }
+            }
+            return $params;
+        }
 
-    Parameter: Type __ Identifier
-
-    RuleBody: "if" _ "(" _ Condition _ ")" _ "{" _ RuleConclusion _ "}"
-
-    Condition: BooleanExpression ConditionTail*
-
-    ConditionTail: _ LogicalOperator _ BooleanExpression
-
-    LogicalOperator: "&&" | "||"
-
-    RuleConclusion: AssignmentStatement*
-
-    AssignmentStatement: QualifiedIdentifier _ "=" _ Value _ ";" _
-
-    QualifiedIdentifier: Identifier "." Identifier
-
-    MethodBody: ReturnStatement*
-
-    ReturnStatement: "return" __ Expression _ ";" _
-
-    Expression: BooleanExpression | Value
-
-    BooleanExpression: QualifiedIdentifier __ ComparisonOperator __ NumberLiteral
-
-    ComparisonOperator: ">=" | "<=" | ">" | "<" | "==" | "!="
-
-    ClassBody: ClassMember*
-
-    ClassMember: PropertyDeclaration | MethodSignature
-
-    ObjectBody: PropertyAssignment*
-
-    PropertyAssignment: Identifier _ "=" _ Value _ ";" _
-
-    PropertyDeclaration: Type __ Identifier Constraint? _ ";" _
-        function PropertyDeclaration__finalise(&$result) {
+    Param: DataType __ Identifier
+        function Param__finalise(&$result) {
             $location = new SourceLocation(1, 1);
-            return new PropertyNode(
-                $result['text'],
-                $result['text'],
-                false,
-                null,
-                $location
-            );
+            $text = $result['text'] ?? '';
+
+            // Extract parameter type and name
+            if (preg_match('/(\w+)\s+(\w+)/', $text, $matches)) {
+                $type = $matches[1];
+                $name = $matches[2];
+
+                return new ParameterNode(
+                    $name,
+                    $type,
+                    $location
+                );
+            }
+
+            return null;
         }
 
-    MethodSignature: Type __ Identifier _ "(" _ ParameterList? _ ")" _ ";" _
-        function MethodSignature__finalise(&$result) {
+    RuleBody: "if" _ "(" _ Condition _ ")" _ "{" _ Actions _ "}"
+
+    Condition: Expr CondTail*
+
+    CondTail: _ LogicOp _ Expr
+
+    LogicOp: "&&" | "||"
+
+    Actions: Action*
+
+    Action: DottedName _ "=" _ Expr _ ";" _
+
+    DottedName: Identifier ("." Identifier)*
+
+    MethodBody: BodyStmt*
+
+    BodyStmt: ReturnStmt | Action
+
+    ReturnStmt: "return" __ Expr _ ";" _
+
+    Expr: CompExpr | MathExpr | Call | Value
+
+    CompExpr: PropRef __ CompOp __ Expr
+
+    MathExpr: MulExpr ((_ ("+" | "-") _) MulExpr)*
+
+    MulExpr: UnaryExpr ((_ ("*" | "/") _) UnaryExpr)*
+
+    UnaryExpr: Primary
+
+    Primary: Call | PropRef | Number | String | Bool | Identifier | "(" _ Expr _ ")"
+
+    Call: DottedName _ "(" _ Args? _ ")"
+
+    PropRef: DottedName
+
+    Args: Expr (_ "," _ Expr)*
+
+    CompOp: ">=" | "<=" | ">" | "<" | "==" | "!="
+
+    ClassBody: ClassItem*
+        function ClassBody__finalise(&$result) {
+            $items = [];
+            if (is_array($result)) {
+                foreach ($result as $item) {
+                    if (is_object($item)) {
+                        $items[] = $item;
+                    } elseif (is_array($item)) {
+                        foreach ($item as $subItem) {
+                            if (is_object($subItem)) {
+                                $items[] = $subItem;
+                            }
+                        }
+                    }
+                }
+            }
+            return $items;
+        }
+
+    ClassItem: PropertyDecl | MethodSig
+
+    ObjectBody: Assign*
+        function ObjectBody__finalise(&$result) {
+            $assignments = [];
+            if (is_array($result)) {
+                foreach ($result as $item) {
+                    if ($item instanceof AssignmentNode) {
+                        $assignments[] = $item;
+                    } elseif (is_array($item)) {
+                        foreach ($item as $subItem) {
+                            if ($subItem instanceof AssignmentNode) {
+                                $assignments[] = $subItem;
+                            }
+                        }
+                    }
+                }
+            }
+            return $assignments;
+        }
+
+    Assign: Identifier _ AssignOp _ Value _ ";" _
+        function Assign__finalise(&$result) {
             $location = new SourceLocation(1, 1);
-            return new MethodSignatureNode(
-                $result['text'],
-                array(),
-                $result['text'],
-                $location
-            );
+            $text = $result['text'] ?? '';
+
+            // Extract assignment components
+            if (preg_match('/(\w+)\s*([+\-=]+)\s*(.+?);/', $text, $matches)) {
+                $property = $matches[1];
+                $operator = trim($matches[2]);
+                $valueText = trim($matches[3]);
+
+                // Parse the value
+                $value = $this->parseValue($valueText);
+
+                return new AssignmentNode(
+                    $property,
+                    $operator,
+                    $value,
+                    $location
+                );
+            }
+
+            return null;
         }
 
-    Constraint: "{" ConstraintSpec "}"
+    AssignOp: "+=" | "-=" | "="
 
-    ConstraintSpec: Number (".." Number)?
+    PropertyDecl: DataType __ Identifier Constraint? _ ";" _
+        function PropertyDecl__finalise(&$result) {
+            $location = new SourceLocation(1, 1);
+            $text = $result['text'] ?? '';
 
-    Value: StringLiteral | NumberLiteral | BooleanLiteral | Identifier
+            // Extract property information
+            if (preg_match('/(\w+)\s+(\w+)/', $text, $matches)) {
+                $type = $matches[1];
+                $name = $matches[2];
 
-    StringLiteral: / "[^"]*" /
+                // Extract constraint if present
+                $constraint = null;
+                if (isset($result['Constraint'])) {
+                    $constraint = $result['Constraint'];
+                }
 
-    NumberLiteral: / [0-9]+ /
+                return new PropertyNode(
+                    $name,
+                    $type,
+                    $constraint,
+                    $location
+                );
+            }
 
-    Number: / [0-9]+ /
+            return null;
+        }
 
-    BooleanLiteral: "true" | "false"
+    MethodSig: DataType __ Identifier _ "(" _ Params? _ ")" _ ";" _
 
-    Type: "string" | "integer" | "boolean" | "float"
+    Constraint: "{" Spec "}"
 
-    SimpleExpression: Identifier | "hello"
+    Spec: Number (".." Number)?
+
+    Value: SetValue | String | Number | Bool | Identifier
+
+    SetValue: "{" _ Elements? _ "}"
+
+    Elements: Identifier (_ "," _ Identifier)*
+
+    String: / "[^"]*" /
+
+    Number: / [0-9]+(\.[0-9]+)? /
+
+    Bool: "true" | "false"
+
+    DataType: CollType | SimpleType
+
+    CollType: ("set" | "list") "<" DataType ">"
+
+    SimpleType: "string" | "integer" | "boolean" | "float"
 
     Identifier: / [a-zA-Z_][a-zA-Z0-9_]* /
 
-    # Optional whitespace (zero or more)
-    _: / \s* /
+    _: (Space | Comment)*
 
-    # Required whitespace (one or more)
-    __: / \s+ /
+    __: (Space | Comment)+
+
+    Space: / \s /
+
+    Comment: LineComment | BlockComment
+
+    LineComment: "//" / [^\n]* /
+
+#    BlockComment: "/*" / .*? / "*" "/"
 
     */
+
+    /**
+     * Helper method to parse values from text
+     */
+    private function parseValue(string $valueText) {
+        $valueText = trim($valueText);
+
+        // String value
+        if (preg_match('/^"([^"]*)"$/', $valueText, $matches)) {
+            return $matches[1];
+        }
+
+        // Number value
+        if (is_numeric($valueText)) {
+            return strpos($valueText, '.') !== false ? (float)$valueText : (int)$valueText;
+        }
+
+        // Boolean value
+        if ($valueText === 'true') {
+            return true;
+        }
+        if ($valueText === 'false') {
+            return false;
+        }
+
+        // Set value
+        if (preg_match('/^\{([^}]*)\}$/', $valueText, $matches)) {
+            $elements = array_map('trim', explode(',', $matches[1]));
+            return array_filter($elements, function($el) { return !empty($el); });
+        }
+
+        // Identifier or other value
+        return $valueText;
+    }
 
 }

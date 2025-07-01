@@ -35,7 +35,6 @@ class OODSLParser extends Packrat {
             $text = $result['text'] ?? '';
             preg_match('/class\s+(\w+)/', $text, $matches);
             $className = $matches[1] ?? 'Unknown';
-
             return new ClassNode(
                 $className,
                 null,
@@ -57,7 +56,6 @@ class OODSLParser extends Packrat {
             preg_match('/object\s+(\w+)\s*:\s*(\w+)/', $text, $matches);
             $objectName = $matches[1] ?? 'Unknown';
             $className = $matches[2] ?? 'Unknown';
-
             return new ObjectNode(
                 $objectName,
                 $className,
@@ -72,7 +70,6 @@ class OODSLParser extends Packrat {
             $text = $result['text'] ?? '';
             preg_match('/method\s+([\w.]+)/', $text, $matches);
             $methodName = $matches[1] ?? 'Unknown';
-
             return new MethodNode(
                 $methodName,
                 array(),
@@ -88,7 +85,6 @@ class OODSLParser extends Packrat {
             $text = $result['text'] ?? '';
             preg_match('/rule\s+(\w+)/', $text, $matches);
             $ruleName = $matches[1] ?? 'Unknown';
-
             return new RuleNode(
                 $ruleName,
                 array(),
@@ -186,11 +182,9 @@ class OODSLParser extends Packrat {
 
     Space: / \s /
 
-    Comment: LineComment | BlockComment
+    Comment: LineComment
 
     LineComment: "//" / [^\n]* /
-
-    BlockComment: "/*" / .*? / "*\/"
 
     */
 

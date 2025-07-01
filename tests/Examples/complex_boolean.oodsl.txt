@@ -1,0 +1,105 @@
+// Complex Boolean Expressions Test
+// Testing &&, ||, and combinations
+
+class Employee {
+    string name;
+    integer age;
+    float salary;
+    string department;
+    integer yearsOfService;
+    boolean isActive;
+    boolean hasGoodRating;
+    boolean isManager;
+
+    // Method signatures for testing
+    boolean isAdult();
+    boolean isSenior();
+}
+
+class Company {
+    string name;
+    float budget;
+    integer employeeCount;
+}
+
+object John : Employee {
+    name = "John Doe";
+    age = 35;
+    salary = 75000.0;
+    department = "Engineering";
+    yearsOfService = 8;
+    isActive = true;
+    hasGoodRating = true;
+    isManager = false;
+}
+
+object TechCorp : Company {
+    name = "TechCorp";
+    budget = 5000000.0;
+    employeeCount = 150;
+}
+
+// Simple AND conditions
+rule HighEarnerAndSenior {
+    if (Employee.salary > 70000.0 && Employee.age > 30) {
+        Employee.isValuable = true;
+    }
+}
+
+// Simple OR conditions
+rule YoungOrHighEarner {
+    if (Employee.age < 25 || Employee.salary > 80000.0) {
+        Employee.hasGoodProspects = true;
+    }
+}
+
+// Complex nested conditions
+rule EligibleForPromotion {
+    if (Employee.age >= 25 && Employee.yearsOfService >= 3 && Employee.salary < 100000.0) {
+        Employee.eligibleForPromotion = true;
+    }
+}
+
+// Mixed AND/OR conditions
+rule QualifiedEmployee {
+    if (Employee.isActive == true && (Employee.hasGoodRating == true || Employee.isManager == true)) {
+        Employee.isQualified = true;
+    }
+}
+
+// Multiple property checks
+rule ExperiencedEngineer {
+    if (Employee.department == "Engineering" && Employee.yearsOfService > 5 && Employee.salary > 60000.0) {
+        Employee.isExperiencedEngineer = true;
+    }
+}
+
+// Company-level rules with complex conditions
+rule SuccessfulCompany {
+    if (Company.budget > 1000000.0 && Company.employeeCount > 100) {
+        Company.isSuccessful = true;
+    }
+}
+
+// Combination of different comparison operators
+rule SpecialBonus {
+    if (Employee.age >= 30 && Employee.age <= 50 && Employee.salary >= 50000.0) {
+        Employee.getsSpecialBonus = true;
+    }
+}
+
+// Complex boolean with multiple ORs
+rule FlexibleHiring {
+    if (Employee.yearsOfService > 10 || Employee.salary > 90000.0 || Employee.department == "Management") {
+        Employee.hasFlexibleSchedule = true;
+    }
+}
+
+// Implement some method signatures for testing
+method Employee.isAdult() returns boolean {
+    return this.age >= 18;
+}
+
+method Employee.isSenior() returns boolean {
+    return this.yearsOfService >= 5;
+}
