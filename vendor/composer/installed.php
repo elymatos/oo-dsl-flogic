@@ -3,7 +3,7 @@
         'name' => 'your-org/oo-dsl-flogic',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '7c7b5eeb65a8e1723c4aa6b81a52704f36aebbd1',
+        'reference' => '19f9f86b8459670172d73ae5e208c2036b0b300e',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -262,6 +262,15 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
+        'smuuf/php-peg' => array(
+            'pretty_version' => '3.1.0',
+            'version' => '3.1.0.0',
+            'reference' => '3141cd2953fb0733211504fa04d087ecab5895fd',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../smuuf/php-peg',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'squizlabs/php_codesniffer' => array(
             'pretty_version' => '3.13.2',
             'version' => '3.13.2.0',
@@ -283,7 +292,7 @@
         'your-org/oo-dsl-flogic' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '7c7b5eeb65a8e1723c4aa6b81a52704f36aebbd1',
+            'reference' => '19f9f86b8459670172d73ae5e208c2036b0b300e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

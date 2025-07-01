@@ -1,0 +1,24 @@
+// Generated F-Logic code from OO-DSL
+// Module: main
+
+// Class: Person
+// Class-level signatures (inheritable)
+Person[|firstName => \string, lastName => \string, email => \string|].
+
+// Method implementation: Person.getFullName
+?Obj:Person[getFullName() -> ?Result] :- ?Obj[firstName -> ?FirstNameValue], ?Obj[lastName -> ?LastNameValue], ?FullName = str_concat(str_concat(?FirstNameValue, " "), ?LastNameValue), ?Result = ?FullName.
+
+// Method implementation: Person.getDisplayName
+?Obj:Person[getDisplayName() -> ?Result] :- ?Obj[firstName -> ?FirstNameValue], ?Name = str_to_upper(?FirstNameValue), ?Result = ?Name.
+
+// Rule: LongName
+@!{LongName} ?X:Person[hasLongName] :- ?X:Person[firstName -> ?Value], str_length(?Value) > 10.
+
+// Rule: ValidEmail
+@!{ValidEmail} ?X:Person[hasValidEmail] :- ?X:Person[email -> ?Value], str_indexOf(?Value, "@") > 0.
+
+// Method implementation: Person.getFormattedInfo
+?Obj:Person[getFormattedInfo() -> ?Result] :- ?Obj[firstName -> ?FirstNameValue], ?Obj[lastName -> ?LastNameValue], ?Obj[email -> ?EmailValue], ?Name = str_concat(str_concat(str_to_upper(?FirstNameValue), " "), str_to_lower(?LastNameValue)), ?Email = str_trim(?EmailValue), ?Result = str_concat(str_concat(str_concat(?Name, " <"), ?Email), ">").
+
+// Rule: ComplexEmailValidation
+@!{ComplexEmailValidation} ?X:Person[hasValidComplexEmail] :- ?X:Person[email -> ?Value], str_length(?Value) > 5, ?X:Person[email -> ?Value], str_indexOf(?Value, "@") > 0, ?X:Person[email -> ?Value], str_indexOf(?Value, ".") > str_index_of(?Obj:Person[email -> ?Value], "@").

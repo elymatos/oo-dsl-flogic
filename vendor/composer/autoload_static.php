@@ -52,6 +52,16 @@ class ComposerStaticInitf5aa61e2b35126113b8125a4efb6c44c
         ),
     );
 
+    public static $prefixesPsr0 = array (
+        'h' => 
+        array (
+            'hafriedlander\\Peg' => 
+            array (
+                0 => __DIR__ . '/..' . '/smuuf/php-peg/lib',
+            ),
+        ),
+    );
+
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'PHPUnit\\Exception' => __DIR__ . '/..' . '/phpunit/phpunit/src/Exception.php',
@@ -690,6 +700,7 @@ class ComposerStaticInitf5aa61e2b35126113b8125a4efb6c44c
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInitf5aa61e2b35126113b8125a4efb6c44c::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitf5aa61e2b35126113b8125a4efb6c44c::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitf5aa61e2b35126113b8125a4efb6c44c::$prefixesPsr0;
             $loader->classMap = ComposerStaticInitf5aa61e2b35126113b8125a4efb6c44c::$classMap;
 
         }, null, ClassLoader::class);

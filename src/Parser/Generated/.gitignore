@@ -1,0 +1,5 @@
+# Generated PEG files
+*.php
+
+# But keep this directory
+!.gitignore

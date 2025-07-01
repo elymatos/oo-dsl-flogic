@@ -22,6 +22,12 @@ use OODSLToFLogic\AST\SetLiteralNode;
 use OODSLToFLogic\AST\TypeNode;
 use OODSLToFLogic\AST\UnaryExpressionNode;
 use OODSLToFLogic\AST\CollectionMethodCallNode;
+use OODSLToFLogic\AST\LocalVariableNode;
+use OODSLToFLogic\AST\VariableReferenceNode;
+use OODSLToFLogic\AST\StringMethodCallNode;
+use OODSLToFLogic\AST\VariableDeclarationNode;
+use OODSLToFLogic\AST\VariableAssignmentNode;
+use OODSLToFLogic\Utils\SymbolTable;
 use OODSLToFLogic\Utils\ErrorHandler;
 
 /**
@@ -261,25 +267,119 @@ class FLogicGenerator implements NodeVisitor
 
     private function generateBlock(BlockNode $block, string $objectVar, array $paramVars = []): string
     {
-        $statements = [];
+        $conditions = [];
+        $localVarMap = []; // Track local variable F-Logic names
+        $propertyAccesses = []; // Track property accesses we need to add
 
         foreach ($block->statements as $statement) {
-            if ($statement instanceof AssignmentNode) {
+            if ($statement instanceof VariableDeclarationNode) {
+                // Handle let/var/const declarations
+                $varName = $this->typeMapper->generateVariable($statement->variableName);
+                $localVarMap[$statement->variableName] = $varName;
+
+                // Collect property accesses from the value expression
+                $this->collectPropertyAccesses($statement->initialValue, $objectVar, $propertyAccesses);
+                $value = $this->generateExpressionWithVars($statement->initialValue, $localVarMap, $objectVar);
+                $conditions[] = "{$varName} = {$value}";
+
+            } elseif ($statement instanceof VariableAssignmentNode) {
+                // Handle variable reassignments
+                if (isset($localVarMap[$statement->variableName])) {
+                    $varName = $localVarMap[$statement->variableName];
+                } else {
+                    $varName = $this->typeMapper->generateVariable($statement->variableName);
+                    $localVarMap[$statement->variableName] = $varName;
+                }
+
+                $this->collectPropertyAccesses($statement->value, $objectVar, $propertyAccesses);
+                $value = $this->generateExpressionWithVars($statement->value, $localVarMap, $objectVar);
+
+                switch ($statement->operator) {
+                    case '=':
+                        $conditions[] = "{$varName} = {$value}";
+                        break;
+                    case '+=':
+                        $conditions[] = "{$varName} = ({$varName} + {$value})";
+                        break;
+                    case '-=':
+                        $conditions[] = "{$varName} = ({$varName} - {$value})";
+                        break;
+                    default:
+                        $conditions[] = "{$varName} = {$value}";
+                }
+
+            } elseif ($statement instanceof LocalVariableNode) {
+                // Handle old-style implicit declarations (keep for compatibility)
+                $varName = $this->typeMapper->generateVariable($statement->variableName);
+                $localVarMap[$statement->variableName] = $varName;
+
+                $this->collectPropertyAccesses($statement->value, $objectVar, $propertyAccesses);
+                $value = $this->generateExpressionWithVars($statement->value, $localVarMap, $objectVar);
+                $conditions[] = "{$varName} = {$value}";
+
+            } elseif ($statement instanceof AssignmentNode) {
                 if ($statement->propertyName === 'return') {
                     // Handle return statements
-                    $value = $this->generateExpression($statement->value);
-                    $statements[] = $value;
+                    $this->collectPropertyAccesses($statement->value, $objectVar, $propertyAccesses);
+                    $value = $this->generateExpressionWithVars($statement->value, $localVarMap, $objectVar);
+                    $conditions[] = "?Result = {$value}";
                 } else {
                     // Handle property assignments
-                    $value = $this->generateExpression($statement->value);
-                    $statements[] = "{$statement->propertyName} -> {$value}";
+                    $this->collectPropertyAccesses($statement->value, $objectVar, $propertyAccesses);
+                    $value = $this->generateExpressionWithVars($statement->value, $localVarMap, $objectVar);
+                    $conditions[] = "{$statement->propertyName} = {$value}";
                 }
             } elseif ($statement instanceof ExpressionNode) {
-                $statements[] = $this->generateExpression($statement);
+                $this->collectPropertyAccesses($statement, $objectVar, $propertyAccesses);
+                $conditions[] = $this->generateExpressionWithVars($statement, $localVarMap, $objectVar);
             }
         }
 
-        return implode(', ', $statements);
+        // Add all property access conditions at the beginning
+        $allConditions = array_merge($propertyAccesses, $conditions);
+        return implode(', ', $allConditions);
+    }
+
+// Add this new helper method
+    private function collectPropertyAccesses(ExpressionNode $expr, string $objectVar, array &$propertyAccesses): void
+    {
+        if ($expr instanceof PropertyAccessNode) {
+            if ($expr->object instanceof IdentifierNode && $expr->object->name === 'this') {
+                $valueVar = $this->typeMapper->generateVariable($expr->propertyName . 'Value');
+                $condition = "{$objectVar}[{$expr->propertyName} -> {$valueVar}]";
+
+                // Avoid duplicates
+                if (!in_array($condition, $propertyAccesses)) {
+                    $propertyAccesses[] = $condition;
+                }
+            }
+        } elseif ($expr instanceof BinaryExpressionNode) {
+            $this->collectPropertyAccesses($expr->left, $objectVar, $propertyAccesses);
+            $this->collectPropertyAccesses($expr->right, $objectVar, $propertyAccesses);
+        } elseif ($expr instanceof MethodCallNode) {
+            foreach ($expr->arguments as $arg) {
+                $this->collectPropertyAccesses($arg, $objectVar, $propertyAccesses);
+            }
+        } elseif ($expr instanceof StringMethodCallNode) {
+            // For string methods like this.firstName.toUpperCase()
+            if ($expr->stringExpression instanceof PropertyAccessNode) {
+                $propAccess = $expr->stringExpression;
+                if ($propAccess->object instanceof IdentifierNode && $propAccess->object->name === 'this') {
+                    $valueVar = $this->typeMapper->generateVariable($propAccess->propertyName . 'Value');
+                    $condition = "{$objectVar}[{$propAccess->propertyName} -> {$valueVar}]";
+
+                    if (!in_array($condition, $propertyAccesses)) {
+                        $propertyAccesses[] = $condition;
+                    }
+                }
+            }
+
+            // Also collect from arguments
+            foreach ($expr->arguments as $arg) {
+                $this->collectPropertyAccesses($arg, $objectVar, $propertyAccesses);
+            }
+        }
+        // Add other expression types as needed
     }
 
     private function generateRuleConclusion(Node $conclusion): string
@@ -373,6 +473,33 @@ class FLogicGenerator implements NodeVisitor
             return $this->generateChainedPropertyAccess($expr);
         } elseif ($expr instanceof MethodCallNode) {
             return $this->generateConditionMethodCall($expr);
+        } elseif ($expr instanceof StringMethodCallNode) {
+            // Handle string methods in conditions
+            if ($expr->stringExpression instanceof PropertyAccessNode) {
+                $propAccess = $expr->stringExpression;
+                if ($propAccess->object instanceof IdentifierNode && ctype_upper($propAccess->object->name[0])) {
+                    $objVar = $this->typeMapper->generateVariable('x');
+                    $valueVar = $this->typeMapper->generateVariable('value');
+                    $condition = "{$objVar}:{$propAccess->object->name}[{$propAccess->propertyName} -> {$valueVar}]";
+
+                    switch ($expr->methodName) {
+                        case 'length':
+                            return "{$condition}, str_length({$valueVar})";
+                        case 'toUpperCase':
+                            return "{$condition}, str_to_upper({$valueVar})";
+                        case 'toLowerCase':
+                            return "{$condition}, str_to_lower({$valueVar})";
+                        case 'indexOf':
+                            if (count($expr->arguments) >= 1) {
+                                $searchArg = $this->generateExpression($expr->arguments[0]);
+                                return "{$condition}, str_indexOf({$valueVar}, {$searchArg})";
+                            }
+                            return "{$condition}, str_indexOf({$valueVar})";
+                        default:
+                            return "{$condition}, str_{$expr->methodName}({$valueVar})";
+                    }
+                }
+            }
         }
 
         return $this->generateExpression($expr);
@@ -530,6 +657,11 @@ class FLogicGenerator implements NodeVisitor
             AssignmentNode::class => $this->generateAssignmentExpression($expr),
             BlockNode::class => $this->generateBlockExpression($expr),
             CollectionMethodCallNode::class => $this->generateCollectionMethod($expr),
+            LocalVariableNode::class => $this->generateLocalVariable($expr),
+            VariableReferenceNode::class => $this->generateVariableReference($expr),
+            StringMethodCallNode::class => $this->generateStringMethod($expr),
+            VariableDeclarationNode::class => $this->generateVariableDeclaration($expr),    // ADD THIS
+            VariableAssignmentNode::class => $this->generateVariableAssignment($expr),      // ADD THIS
             default => "/* Unsupported expression: " . get_class($expr) . " */",
         };
     }
@@ -574,14 +706,18 @@ class FLogicGenerator implements NodeVisitor
     {
         $left = $this->generateExpression($expr->left);
         $right = $this->generateExpression($expr->right);
-        $op = $this->typeMapper->mapOperator($expr->operator);
 
         // Handle special cases
         if ($expr->operator === '&&' || $expr->operator === 'and') {
             return "{$left}, {$right}";
         } elseif ($expr->operator === '||' || $expr->operator === 'or') {
             return "({$left}; {$right})";
+        } elseif ($expr->operator === '+') {
+            // Check if this might be string concatenation
+            // For now, we'll assume + on strings means concatenation
+            return "str_concat({$left}, {$right})";
         } else {
+            $op = $this->typeMapper->mapOperator($expr->operator);
             return "{$left} {$op} {$right}";
         }
     }
@@ -699,6 +835,189 @@ class FLogicGenerator implements NodeVisitor
     private function generateCollectionMethod(CollectionMethodCallNode $expr): string
     {
         return $expr->generateFLogic(); // Use the method from your AST node!
+    }
+
+    // Add these methods to your FLogicGenerator class
+
+    private function generateLocalVariable(LocalVariableNode $expr): string
+    {
+        // Local variables are handled in the method generation context
+        // This shouldn't be called directly in expressions
+        return "/* Local variable: {$expr->variableName} */";
+    }
+
+    private function generateVariableReference(VariableReferenceNode $expr): string
+    {
+        // Generate F-Logic variable name
+        return $this->typeMapper->generateVariable($expr->variableName);
+    }
+
+    public function visitLocalVariable(LocalVariableNode $node): mixed
+    {
+        // Local variables are handled in the block context, not individually
+        return null;
+    }
+
+    public function visitVariableReference(VariableReferenceNode $node): mixed
+    {
+        return $this->generateVariableReference($node);
+    }
+
+    // Helper method to generate expressions with local variable context
+    private function generateExpressionWithVars(ExpressionNode $expr, array $localVarMap, string $objectVar): string
+    {
+        if ($expr instanceof VariableReferenceNode) {
+            // Check if it's a local variable
+            if (isset($localVarMap[$expr->variableName])) {
+                return $localVarMap[$expr->variableName];
+            }
+            // Otherwise, treat as regular identifier
+            return $this->generateExpression($expr);
+        } elseif ($expr instanceof PropertyAccessNode) {
+            // Handle 'this' references in local variable context
+            if ($expr->object instanceof IdentifierNode && $expr->object->name === 'this') {
+                // For property access in expressions, just return the variable name
+                // The property access condition will be added separately
+                return $this->typeMapper->generateVariable($expr->propertyName . 'Value');
+            }
+            return $this->generateExpression($expr);
+        } elseif ($expr instanceof BinaryExpressionNode) {
+            // Handle special operators first
+            if ($expr->operator === '&&' || $expr->operator === 'and') {
+                $left = $this->generateExpressionWithVars($expr->left, $localVarMap, $objectVar);
+                $right = $this->generateExpressionWithVars($expr->right, $localVarMap, $objectVar);
+                return "{$left}, {$right}";
+            } elseif ($expr->operator === '||' || $expr->operator === 'or') {
+                $left = $this->generateExpressionWithVars($expr->left, $localVarMap, $objectVar);
+                $right = $this->generateExpressionWithVars($expr->right, $localVarMap, $objectVar);
+                return "({$left}; {$right})";
+            } elseif ($expr->operator === '+') {
+                // Smart detection: use str_concat only for string operations
+                $left = $this->generateExpressionWithVars($expr->left, $localVarMap, $objectVar);
+                $right = $this->generateExpressionWithVars($expr->right, $localVarMap, $objectVar);
+
+                // Check if either operand is a string literal or string operation
+                if ($this->isStringExpression($expr->left) || $this->isStringExpression($expr->right)) {
+                    return "str_concat({$left}, {$right})";
+                } else {
+                    // Arithmetic addition
+                    return "({$left} + {$right})";
+                }
+            } else {
+                // Other binary expressions
+                $left = $this->generateExpressionWithVars($expr->left, $localVarMap, $objectVar);
+                $right = $this->generateExpressionWithVars($expr->right, $localVarMap, $objectVar);
+                $op = $this->typeMapper->mapOperator($expr->operator);
+                return "({$left} {$op} {$right})";
+            }
+        } elseif ($expr instanceof StringMethodCallNode) {
+            // Handle string methods with proper variable context
+            $stringExpr = $this->generateExpressionWithVars($expr->stringExpression, $localVarMap, $objectVar);
+
+            switch ($expr->methodName) {
+                case 'length':
+                    return "str_length({$stringExpr})";
+                case 'toUpperCase':
+                    return "str_to_upper({$stringExpr})";
+                case 'toLowerCase':
+                    return "str_to_lower({$stringExpr})";
+                // ... other cases
+                default:
+                    return "str_{$expr->methodName}({$stringExpr})";
+            }
+        }
+
+        // Default to regular expression generation
+        return $this->generateExpression($expr);
+    }
+    private function isStringExpression(ExpressionNode $expr): bool
+    {
+        if ($expr instanceof LiteralNode && $expr->type === 'string') {
+            return true;
+        }
+
+        if ($expr instanceof StringMethodCallNode) {
+            return true;
+        }
+
+        if ($expr instanceof BinaryExpressionNode && $expr->operator === '+') {
+            // If either side is a string, the whole expression is string concatenation
+            return $this->isStringExpression($expr->left) || $this->isStringExpression($expr->right);
+        }
+
+        // You could add more sophisticated type checking here
+        return false;
+    }
+
+    private function generateStringMethod(StringMethodCallNode $expr): string
+    {
+        // Generate the string expression first
+        $stringExpr = $this->generateExpression($expr->stringExpression);
+
+        switch ($expr->methodName) {
+            case 'length':
+                return "str_length({$stringExpr})";
+            case 'toUpperCase':
+                return "str_to_upper({$stringExpr})";
+            case 'toLowerCase':
+                return "str_to_lower({$stringExpr})";
+            case 'trim':
+                return "str_trim({$stringExpr})";
+            case 'substring':
+                if (count($expr->arguments) >= 2) {
+                    $start = $this->generateExpression($expr->arguments[0]);
+                    $length = $this->generateExpression($expr->arguments[1]);
+                    return "str_substring({$stringExpr}, {$start}, {$length})";
+                } elseif (count($expr->arguments) >= 1) {
+                    $start = $this->generateExpression($expr->arguments[0]);
+                    return "str_substring({$stringExpr}, {$start})";
+                }
+                return "str_substring({$stringExpr})";
+            case 'indexOf':
+                if (count($expr->arguments) >= 1) {
+                    $searchStr = $this->generateExpression($expr->arguments[0]);
+                    return "str_index_of({$stringExpr}, {$searchStr})";
+                }
+                return "str_index_of({$stringExpr})";
+            case 'replace':
+                if (count($expr->arguments) >= 2) {
+                    $search = $this->generateExpression($expr->arguments[0]);
+                    $replace = $this->generateExpression($expr->arguments[1]);
+                    return "str_replace({$stringExpr}, {$search}, {$replace})";
+                }
+                return "str_replace({$stringExpr})";
+            default:
+                throw new \Exception("Unsupported string method: {$expr->methodName}");
+        }
+    }
+
+    // Add visitor method
+    public function visitStringMethodCall(StringMethodCallNode $node): mixed
+    {
+        return $this->generateStringMethod($node);
+    }
+
+    private function generateVariableDeclaration(VariableDeclarationNode $expr): string
+    {
+        // Variable declarations are handled in the method generation context
+        return "/* Variable declaration: {$expr->variableName} */";
+    }
+
+    private function generateVariableAssignment(VariableAssignmentNode $expr): string
+    {
+        // Variable assignments are handled in the method generation context
+        return "/* Variable assignment: {$expr->variableName} */";
+    }
+
+// Add visitor methods
+    public function visitVariableDeclaration(VariableDeclarationNode $node): mixed
+    {
+        return $this->generateVariableDeclaration($node);
+    }
+
+    public function visitVariableAssignment(VariableAssignmentNode $node): mixed
+    {
+        return $this->generateVariableAssignment($node);
     }
 
     // Utility methods for output formatting
