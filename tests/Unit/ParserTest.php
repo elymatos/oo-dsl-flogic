@@ -1,14 +1,36 @@
 <?php
 
-<?php
-
 namespace OODSLToFLogic\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use OODSLToFLogic\Parser\Parser;
 use OODSLToFLogic\CodeGen\FLogicGenerator;
 use OODSLToFLogic\CodeGen\TypeMapper;
-use OODSLToFLogic\AST\*;
+use OODSLToFLogic\AST\AssignmentNode;
+use OODSLToFLogic\AST\BinaryExpressionNode;
+use OODSLToFLogic\AST\BlockNode;
+use OODSLToFLogic\AST\ClassNode;
+use OODSLToFLogic\AST\CollectionMethodCallNode;
+use OODSLToFLogic\AST\ConstraintNode;
+use OODSLToFLogic\AST\ExpressionNode;
+use OODSLToFLogic\AST\IdentifierNode;
+use OODSLToFLogic\AST\LiteralNode;
+use OODSLToFLogic\AST\MethodCallNode;
+use OODSLToFLogic\AST\MethodNode;
+use OODSLToFLogic\AST\Node;
+use OODSLToFLogic\AST\ObjectNode;
+use OODSLToFLogic\AST\ParameterNode;
+use OODSLToFLogic\AST\ProgramNode;
+use OODSLToFLogic\AST\PropertyAccessNode;
+use OODSLToFLogic\AST\PropertyNode;
+use OODSLToFLogic\AST\RuleNode;
+use OODSLToFLogic\AST\SetLiteralNode;
+use OODSLToFLogic\AST\TypeNode;
+use OODSLToFLogic\AST\LocalVariableNode;
+use OODSLToFLogic\AST\VariableReferenceNode;
+use OODSLToFLogic\AST\StringMethodCallNode;
+use OODSLToFLogic\AST\VariableDeclarationNode;
+use OODSLToFLogic\AST\VariableAssignmentNode;
 use OODSLToFLogic\Utils\SourceLocation;
 
 class ParserTest extends TestCase

@@ -4,60 +4,62 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use hafriedlander\Peg\Compiler;
 
-echo "🔨 Building PEG Parser with smuuf/php-peg (hafriedlander-compatible API)...\n";
-
 try {
-    $compiler = new Compiler();
-
-    echo "🔍 Available methods in Compiler class:\n";
-    $methods = get_class_methods($compiler);
-    foreach ($methods as $method) {
-        echo "  - {$method}()\n";
-    }
-
     $grammarFile = __DIR__ . '/../src/Parser/Grammar.peg.inc';
     $outputFile = __DIR__ . '/../src/Parser/Generated/PEGParserGenerated.php';
 
-    // Check if grammar file exists
+    // Ensure output directory exists
+    $outputDir = dirname($outputFile);
+    if (!is_dir($outputDir)) {
+        mkdir($outputDir, 0755, true);
+    }
+
+    echo "Compiling grammar from: {$grammarFile}\n";
+
     if (!file_exists($grammarFile)) {
-        echo "⚠️  Grammar file not found: {$grammarFile}\n";
-        exit(1);
+        throw new Exception("Grammar file not found: {$grammarFile}");
     }
 
-    echo "📄 Input: {$grammarFile}\n";
-    echo "📄 Output: {$outputFile}\n";
+    $compiler = new Compiler();
+    $grammar = file_get_contents($grammarFile);
+    $result = $compiler->compile($grammar);
 
-    // Try different possible methods
-    if (method_exists($compiler, 'compileFile')) {
-        echo "🔨 Using compileFile() method...\n";
-        $compiler->compileFile($grammarFile, $outputFile);
-    } elseif (method_exists($compiler, 'compile')) {
-        echo "🔨 Using compile() method...\n";
-        $grammar = file_get_contents($grammarFile);
-        $result = $compiler->compile($grammar);
-        file_put_contents($outputFile, $result);
-    } elseif (method_exists($compiler, 'compileGrammar')) {
-        echo "🔨 Using compileGrammar() method...\n";
-        $grammar = file_get_contents($grammarFile);
-        $result = $compiler->compileGrammar($grammar);
-        file_put_contents($outputFile, $result);
-    } else {
-        throw new Exception("No suitable compile method found in Compiler class");
+    print_r($result);
+
+    if (empty($result)) {
+        throw new Exception("Compilation failed - no output generated");
     }
 
-    echo "✅ PEG Parser generated successfully!\n";
+//    // Add namespace to the generated result
+//    $namespacedResult = "<?php\n\nnamespace OODSLToFLogic\\Parser\\Generated;\n\n" .
+//        "use hafriedlander\\Peg\\Parser;\n" .
+//        "use OODSLToFLogic\\AST\\ProgramNode;\n" .
+//        "use OODSLToFLogic\\AST\\ClassNode;\n" .
+//        "use OODSLToFLogic\\Utils\\SourceLocation;\n\n" .
+//        substr($result, 5); // Remove "<?php" from beginning
+//
+    //file_put_contents($outputFile, $namespacedResult);
+    file_put_contents($outputFile, $result);
 
-    if (file_exists($outputFile)) {
-        $fileSize = filesize($outputFile);
-        echo "📊 Generated file size: " . number_format($fileSize) . " bytes\n";
+    echo "✅ Parser compiled successfully!\n";
+    echo "Output: {$outputFile}\n";
+
+    // Validate syntax
+    $output = [];
+    $returnCode = 0;
+    exec("php -l {$outputFile} 2>&1", $output, $returnCode);
+
+    if ($returnCode !== 0) {
+        echo "❌ Syntax error in generated file:\n";
+        foreach ($output as $line) {
+            echo "   {$line}\n";
+        }
+        throw new Exception("Generated file has syntax errors");
     }
+
+    echo "✅ Generated file syntax is valid\n";
 
 } catch (Exception $e) {
-    echo "❌ Error building PEG parser: " . $e->getMessage() . "\n";
-
-    echo "\n🔍 Debugging info:\n";
-    echo "Class: " . get_class($compiler) . "\n";
-    echo "File: " . (new ReflectionClass($compiler))->getFileName() . "\n";
-
+    echo "❌ Error: " . $e->getMessage() . "\n";
     exit(1);
 }
