@@ -1,0 +1,17 @@
+<?php
+namespace OODSLToFLogic\Parser\Generated;
+
+use hafriedlander\Peg\Parser\Packrat;
+
+class OODSLParser extends Packrat {
+
+    /*!* OODSLParser
+
+    Program: "hello"
+        function Program__finalise(&$result) {
+            return array('type' => 'program', 'text' => $result['text']);
+        }
+
+    */
+
+}

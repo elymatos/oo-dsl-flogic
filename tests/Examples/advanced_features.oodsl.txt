@@ -1,0 +1,104 @@
+
+// tests/Examples/advanced_features.oodsl
+// Advanced features example
+
+class Vehicle {
+    string brand;
+    string model;
+    integer year;
+    boolean isElectric;
+
+    integer getAge();
+    boolean isVintage();
+}
+
+class Car inherits from Vehicle {
+    integer doors{2..5};
+    string fuelType;
+    float engineSize;
+}
+
+class Motorcycle inherits from Vehicle {
+    integer engineCC;
+    boolean hasSidecar;
+}
+
+class Fleet {
+    string name;
+    set<Vehicle> vehicles;
+    Person owner;
+
+    integer getTotalVehicles();
+    set<Vehicle> getElectricVehicles();
+}
+
+object Honda : Car {
+    brand = "Honda";
+    model = "Civic";
+    year = 2020;
+    doors = 4;
+    fuelType = "Gasoline";
+    engineSize = 2.0;
+    isElectric = false;
+}
+
+object Tesla : Car {
+    brand = "Tesla";
+    model = "Model 3";
+    year = 2023;
+    doors = 4;
+    fuelType = "Electric";
+    engineSize = 0.0;
+    isElectric = true;
+}
+
+object Harley : Motorcycle {
+    brand = "Harley Davidson";
+    model = "Street 750";
+    year = 2019;
+    engineCC = 750;
+    hasSidecar = false;
+    isElectric = false;
+}
+
+object MyFleet : Fleet {
+    name = "Personal Fleet";
+    vehicles += {Honda, Tesla, Harley};
+    owner = John;
+}
+
+method Vehicle.getAge() returns integer {
+    return 2025 - this.year;
+}
+
+method Vehicle.isVintage() returns boolean {
+    return this.getAge() > 25;
+}
+
+method Fleet.getTotalVehicles() returns integer {
+    return this.vehicles.count();
+}
+
+rule ModernVehicle {
+    if (Vehicle.year >= 2020) {
+        Vehicle.isModern = true;
+    }
+}
+
+rule EcoFriendly {
+    if (Vehicle.isElectric == true) {
+        Vehicle.isEcoFriendly = true;
+    }
+}
+
+rule SportsCar {
+    if (Car.doors == 2 && Car.engineSize > 3.0) {
+        Car.isSportsCar = true;
+    }
+}
+
+rule PowerfulMotorcycle {
+    if (Motorcycle.engineCC > 600) {
+        Motorcycle.isPowerful = true;
+    }
+}

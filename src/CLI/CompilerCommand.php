@@ -2,191 +2,225 @@
 
 namespace OODSLToFLogic\CLI;
 
-use OODSLToFLogic\Parser\Parser;
+use OODSLToFLogic\Parser\Generated\OODSLParser; // Now matches the filename
 use OODSLToFLogic\CodeGen\FLogicGenerator;
-use OODSLToFLogic\Utils\Logger;
+use OODSLToFLogic\AST\ProgramNode;
+use OODSLToFLogic\Utils\SourceLocation;
+use Exception;
 
-/**
- * Command-line interface for the OO-DSL compiler
- */
 class CompilerCommand
 {
-    private Parser $parser;
-    private FLogicGenerator $generator;
-    private Logger $logger;
+    private $options = [
+        'output' => null,
+        'debug' => false,
+        'help' => false,
+    ];
 
-    public function __construct()
+    public function run(array $argv): int
     {
-        $this->parser = new Parser();
-        $this->generator = new FLogicGenerator();
-        $this->logger = Logger::getInstance();
-    }
+        try {
+            $this->parseArguments($argv);
 
-    public function run(array $args): int
-    {
-        $options = $this->parseArguments($args);
+            if ($this->options['help']) {
+                $this->showHelp();
+                return 0;
+            }
 
-        if ($options === null) {
-            $this->showUsage();
+            $inputFile = $this->getInputFile($argv);
+            $outputFile = $this->getOutputFile($inputFile);
+
+            return $this->compile($inputFile, $outputFile);
+
+        } catch (Exception $e) {
+            fwrite(STDERR, "Error: " . $e->getMessage() . "\n");
             return 1;
         }
-
-        if ($options['debug']) {
-            $this->logger->setDebug(true);
-        }
-
-        return $this->compile($options);
     }
 
-    private function parseArguments(array $args): ?array
+    private function parseArguments(array $argv): void
     {
-        $options = [
-            'input' => null,
-            'output' => null,
-            'debug' => false,
-            'help' => false,
-        ];
-
-        for ($i = 1; $i < count($args); $i++) {
-            $arg = $args[$i];
+        for ($i = 1; $i < count($argv); $i++) {
+            $arg = $argv[$i];
 
             switch ($arg) {
                 case '-h':
                 case '--help':
-                    $options['help'] = true;
-                    break;
-
-                case '-d':
-                case '--debug':
-                    $options['debug'] = true;
+                    $this->options['help'] = true;
                     break;
 
                 case '-o':
                 case '--output':
-                    if ($i + 1 < count($args)) {
-                        $options['output'] = $args[++$i];
-                    } else {
-                        $this->logger->error("Option {$arg} requires a value");
-                        return null;
+                    if (!isset($argv[$i + 1])) {
+                        throw new Exception("Option {$arg} requires a value");
                     }
+                    $this->options['output'] = $argv[++$i];
+                    break;
+
+                case '--debug':
+                    $this->options['debug'] = true;
                     break;
 
                 default:
                     if (str_starts_with($arg, '-')) {
-                        $this->logger->error("Unknown option: {$arg}");
-                        return null;
-                    } else {
-                        if ($options['input'] === null) {
-                            $options['input'] = $arg;
-                        } else {
-                            $this->logger->error("Multiple input files not supported");
-                            return null;
-                        }
+                        throw new Exception("Unknown option: {$arg}");
                     }
+                    // This is the input file, handled in getInputFile()
                     break;
             }
         }
-
-        if ($options['help']) {
-            $this->showUsage();
-            exit(0);
-        }
-
-        if ($options['input'] === null) {
-            $this->logger->error("No input file specified");
-            return null;
-        }
-
-        return $options;
     }
 
-    private function compile(array $options): int
+    private function getInputFile(array $argv): string
     {
-        $inputFile = $options['input'];
-        $outputFile = $options['output'] ?? $this->getDefaultOutputFile($inputFile);
+        // Find the input file (non-option argument)
+        for ($i = 1; $i < count($argv); $i++) {
+            $arg = $argv[$i];
 
-        $this->logger->info("Compiling {$inputFile} to {$outputFile}");
-
-        // Parse input file
-        $this->logger->debug("Parsing input file...");
-        $ast = $this->parser->parseFile($inputFile);
-
-        if ($ast === null || $this->parser->hasErrors()) {
-            $this->logger->error("Parse failed:");
-            echo $this->parser->getErrorHandler()->formatErrors();
-            return 1;
-        }
-
-        $this->logger->debug("Parse successful");
-
-        // Generate F-Logic code
-        $this->logger->debug("Generating F-Logic code...");
-        $flogicCode = $this->generator->generate($ast);
-
-        if ($this->generator->getErrorHandler()->hasErrors()) {
-            $this->logger->error("Code generation failed:");
-            echo $this->generator->getErrorHandler()->formatErrors();
-            return 1;
-        }
-
-        $this->logger->debug("Code generation successful");
-
-        // Write output file
-        $this->logger->debug("Writing output file...");
-        if (!$this->writeOutputFile($outputFile, $flogicCode)) {
-            $this->logger->error("Failed to write output file: {$outputFile}");
-            return 1;
-        }
-
-        $this->logger->info("Compilation successful!");
-
-        // Show warnings if any
-        if ($this->parser->getErrorHandler()->hasWarnings() ||
-            $this->generator->getErrorHandler()->hasWarnings()) {
-            echo "\nWarnings:\n";
-            echo $this->parser->getErrorHandler()->formatErrors();
-            echo $this->generator->getErrorHandler()->formatErrors();
-        }
-
-        return 0;
-    }
-
-    private function getDefaultOutputFile(string $inputFile): string
-    {
-        $pathInfo = pathinfo($inputFile);
-        return $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.flr';
-    }
-
-    private function writeOutputFile(string $outputFile, string $content): bool
-    {
-        $directory = dirname($outputFile);
-
-        if (!is_dir($directory)) {
-            if (!mkdir($directory, 0755, true)) {
-                return false;
+            // Skip options and their values
+            if (str_starts_with($arg, '-')) {
+                if (in_array($arg, ['-o', '--output'])) {
+                    $i++; // Skip the option value
+                }
+                continue;
             }
+
+            return $arg;
         }
 
-        return file_put_contents($outputFile, $content) !== false;
+        // No file provided, read from stdin
+        return 'php://stdin';
     }
 
-    private function showUsage(): void
+    private function getOutputFile(string $inputFile): string
     {
-        echo <<<USAGE
+        // If output explicitly specified, use it
+        if ($this->options['output']) {
+            return $this->options['output'];
+        }
+
+        // If reading from stdin, output to stdout
+        if ($inputFile === 'php://stdin') {
+            return 'php://stdout';
+        }
+
+        // Generate .flr file from input file
+        $pathInfo = pathinfo($inputFile);
+        $baseName = $pathInfo['filename']; // filename without extension
+        $directory = $pathInfo['dirname'];
+
+        return $directory . DIRECTORY_SEPARATOR . $baseName . '.flr';
+    }
+
+    private function compile(string $inputFile, string $outputFile): int
+    {
+        try {
+            // Read input
+            if ($inputFile === 'php://stdin') {
+                $input = stream_get_contents(STDIN);
+            } else {
+                if (!file_exists($inputFile)) {
+                    throw new Exception("Input file not found: {$inputFile}");
+                }
+                $input = file_get_contents($inputFile);
+            }
+
+            if ($input === false || empty(trim($input))) {
+                throw new Exception("No input provided or file is empty");
+            }
+
+            // Parse with PEG parser
+            if ($this->options['debug']) {
+                fwrite(STDERR, "Parsing input with OODSLParser...\n");
+            }
+
+            $parser = new OODSLParser($input);
+            $ast = $parser->match_Program();
+
+            if ($ast === false) {
+                throw new Exception("Failed to parse input. Check DSL syntax.");
+            }
+
+            if ($this->options['debug']) {
+                fwrite(STDERR, "Parse successful. AST type: " . (is_object($ast) ? get_class($ast) : gettype($ast)) . "\n");
+            }
+
+            // Fallback: if we get an array instead of ProgramNode, create one
+            if (is_array($ast) && !($ast instanceof ProgramNode)) {
+                if ($this->options['debug']) {
+                    fwrite(STDERR, "Converting array result to ProgramNode...\n");
+                }
+                $location = new SourceLocation(1, 1);
+                $ast = new ProgramNode([$ast], $location);
+            }
+
+            // Generate F-Logic code
+            $generator = new FLogicGenerator();
+            $flogicCode = $generator->generate($ast);
+
+            // Write output
+            if ($outputFile === 'php://stdout') {
+                echo $flogicCode;
+            } else {
+                // Ensure output directory exists
+                $outputDir = dirname($outputFile);
+                if (!is_dir($outputDir)) {
+                    if (!mkdir($outputDir, 0755, true)) {
+                        throw new Exception("Could not create output directory: {$outputDir}");
+                    }
+                }
+
+                if (file_put_contents($outputFile, $flogicCode) === false) {
+                    throw new Exception("Could not write to output file: {$outputFile}");
+                }
+
+                if ($this->options['debug']) {
+                    fwrite(STDERR, "Successfully compiled {$inputFile} -> {$outputFile}\n");
+                } else {
+                    echo "Compiled: {$inputFile} -> {$outputFile}\n";
+                }
+            }
+
+            return 0;
+
+        } catch (Exception $e) {
+            throw new Exception("Compilation failed: " . $e->getMessage());
+        }
+    }
+
+    private function showHelp(): void
+    {
+        echo <<<HELP
 OO-DSL to F-Logic Compiler
 
-Usage: oodsl-compile [options] <input-file>
+USAGE:
+    oodsl-compile [OPTIONS] [INPUT_FILE]
 
-Options:
+ARGUMENTS:
+    INPUT_FILE    Input DSL file to compile (if omitted, reads from stdin)
+
+OPTIONS:
+    -o, --output FILE    Output file (default: INPUT_FILE with .flr extension)
+    --debug             Enable debug output
     -h, --help          Show this help message
-    -o, --output FILE   Specify output file (default: input.flr)
-    -d, --debug         Enable debug output
 
-Examples:
+EXAMPLES:
+    # Compile example.oodsl to example.flr
     oodsl-compile example.oodsl
-    oodsl-compile -o output.flr input.oodsl
-    oodsl-compile --debug example.oodsl
 
-USAGE;
+    # Compile with custom output file
+    oodsl-compile example.oodsl -o custom.flr
+
+    # Compile from stdin to stdout
+    echo 'class Person { string name; }' | oodsl-compile
+
+    # Compile from stdin to file
+    echo 'class Person { string name; }' | oodsl-compile -o output.flr
+
+OUTPUT:
+    - If no output file specified and input is a file: creates INPUT_FILE.flr
+    - If no output file specified and input is stdin: outputs to stdout
+    - If output file specified: writes to that file
+
+HELP;
     }
 }
