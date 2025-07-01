@@ -21,6 +21,7 @@ use OODSLToFLogic\AST\RuleNode;
 use OODSLToFLogic\AST\SetLiteralNode;
 use OODSLToFLogic\AST\TypeNode;
 use OODSLToFLogic\AST\UnaryExpressionNode;
+use OODSLToFLogic\AST\CollectionMethodCallNode;
 use OODSLToFLogic\Utils\ErrorHandler;
 
 /**
@@ -528,6 +529,7 @@ class FLogicGenerator implements NodeVisitor
             SetLiteralNode::class => $this->generateSetLiteral($expr),
             AssignmentNode::class => $this->generateAssignmentExpression($expr),
             BlockNode::class => $this->generateBlockExpression($expr),
+            CollectionMethodCallNode::class => $this->generateCollectionMethod($expr),
             default => "/* Unsupported expression: " . get_class($expr) . " */",
         };
     }
@@ -692,6 +694,11 @@ class FLogicGenerator implements NodeVisitor
     {
         $elements = array_map([$this, 'generateExpression'], $expr->elements);
         return '{' . implode(', ', $elements) . '}';
+    }
+
+    private function generateCollectionMethod(CollectionMethodCallNode $expr): string
+    {
+        return $expr->generateFLogic(); // Use the method from your AST node!
     }
 
     // Utility methods for output formatting

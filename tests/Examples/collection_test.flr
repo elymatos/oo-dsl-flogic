@@ -1,0 +1,41 @@
+// Generated F-Logic code from OO-DSL
+// Module: main
+
+// Class: Family
+// Class-level signatures (inheritable)
+Family[|children => Person, surname => \string|].
+
+// Class: Person
+// Class-level signatures (inheritable)
+Person[|name => \string, age => \integer|].
+
+// Object: SmithFamily
+SmithFamily:Family.
+SmithFamily[surname -> "Smith"].
+SmithFamily[children -> ?Alice].
+SmithFamily[children -> ?Bob].
+SmithFamily[children -> ?Charlie].
+
+// Object: alice
+alice:Person.
+alice[name -> "Alice"].
+alice[age -> 16].
+
+// Object: bob
+bob:Person.
+bob[name -> "Bob"].
+bob[age -> 14].
+
+// Object: charlie
+charlie:Person.
+charlie[name -> "Charlie"].
+charlie[age -> 12].
+
+// Rule: LargeFamily
+@!{LargeFamily} ?X:Family[isLarge] :- |Family.children| > 2.
+
+// Rule: SmallFamily
+@!{SmallFamily} ?X:Family[isSmall] :- |Family.children| =< 2.
+
+// Rule: SmithFamilySize
+@!{SmithFamilySize} ?X:SmithFamily[hasThreeKids] :- |SmithFamily.children| = 3.

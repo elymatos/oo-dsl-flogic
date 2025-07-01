@@ -6,6 +6,7 @@ use OODSLToFLogic\AST\AssignmentNode;
 use OODSLToFLogic\AST\BinaryExpressionNode;
 use OODSLToFLogic\AST\BlockNode;
 use OODSLToFLogic\AST\ClassNode;
+use OODSLToFLogic\AST\CollectionMethodCallNode;
 use OODSLToFLogic\AST\ConstraintNode;
 use OODSLToFLogic\AST\ExpressionNode;
 use OODSLToFLogic\AST\IdentifierNode;
@@ -705,11 +706,28 @@ class SimpleParser
 
                     return $methodCall;
                 } else {
-                    // Property access - check for chained access
+                    // Property access - check for collection method calls first
                     $objectNode = new IdentifierNode($name, $this->getCurrentLocation());
                     $result = new PropertyAccessNode($objectNode, $memberName, $this->getCurrentLocation());
 
-                    // Handle chained property access like Person.spouse.name
+                    // Check for collection method call (e.g., Family.children.count())
+                    if ($this->match('DOT')) {
+                        $methodName = $this->getCurrentToken()['value'] ?? '';
+
+                        if (in_array($methodName, ['count', 'sum', 'size', 'filter'])) {
+                            $this->advance(); // consume method name
+                            $this->consume('LPAREN', 'Expected "("');
+                            $this->consume('RPAREN', 'Expected ")"');
+
+                            $collection = $name . '.' . $memberName;
+                            return new CollectionMethodCallNode($collection, $methodName, [], $this->getCurrentLocation());
+                        } else {
+                            // Put back the DOT for normal property chaining
+                            $this->position--;
+                        }
+                    }
+
+                    // Handle normal chained property access
                     while ($this->match('DOT')) {
                         $nextMember = $this->consume('IDENTIFIER', 'Expected member name')['value'];
                         if ($this->match('LPAREN')) {

@@ -266,13 +266,15 @@ BinaryExpression: left:PrimaryExpression __ op:BinaryOperator __ right:Expressio
 
 BinaryOperator: "&&" | "||" | "==" | "!=" | "<=" | ">=" | "<" | ">" | "+" | "-" | "*" | "/"
 
-PrimaryExpression: "(" __ expr:Expression __ ")" | MethodCall | PropertyAccess | Literal | Identifier
+PrimaryExpression: "(" __ expr:Expression __ ")" | CollectionMethodCall | MethodCall | PropertyAccess | Literal | Identifier
     function PrimaryExpression__finalise(&$result) {
         if (isset($result['expr'])) {
             return $result['expr'];
         }
         return $result;
     }
+
+
 
 MethodCall: object:Identifier __ "." __ method:Identifier __ "(" __ args:ArgumentList? __ ")"
     function MethodCall__finalise(&$result) {
@@ -377,3 +379,21 @@ Identifier: /[a-zA-Z_][a-zA-Z0-9_]*/
 __: /\s*/
 
 */
+
+# Collection Method Calls (NEW)
+CollectionMethodCall: object:Identifier __ "." __ property:Identifier __ "." __ method:CollectionMethod __ "(" __ ")"
+    function CollectionMethodCall__finalise(&$result) {
+        $location = new SourceLocation(1, 1);
+        $collection = $result['object'] . '.' . $result['property'];
+        return new CollectionMethodCallNode(
+            $collection,
+            $result['method'],
+            [],
+            $location
+        );
+    }
+
+CollectionMethod: "count" | "sum" | "size"
+    function CollectionMethod__finalise(&$result) {
+        return $this->string;
+    }
