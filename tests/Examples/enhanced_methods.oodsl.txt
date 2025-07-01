@@ -1,0 +1,53 @@
+// Enhanced method syntax example
+// Supports both inside-class and outside-class method definitions
+
+class Person {
+    string name;
+    integer age;
+    float salary;
+
+    // Method signatures (declarations only)
+    boolean isAdult();
+    string getFullName();
+
+    // Method implementations inside class (NEW FEATURE!)
+    integer getAge() {
+        return this.age;
+    }
+
+    boolean isEligible() returns boolean {
+        return this.age >= 18;
+    }
+
+    float calculateTax() returns float {
+        return this.salary * 0.25;
+    }
+}
+
+// Traditional outside-class method definitions (still supported)
+method Person.isAdult() returns boolean {
+    return this.age >= 18;
+}
+
+method Person.getFullName() returns string {
+    return this.name;
+}
+
+object John : Person {
+    name = "John Doe";
+    age = 30;
+    salary = 50000.0;
+}
+
+// Test both syntax styles
+rule TestInsideMethod {
+    if (Person.getAge() > 25) {
+        Person.isExperienced = true;
+    }
+}
+
+rule TestOutsideMethod {
+    if (Person.isAdult() == true) {
+        Person.canVote = true;
+    }
+}

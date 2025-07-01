@@ -1,12 +1,3 @@
-$ ./bin/oodsl-compile tests/Examples/simple_test.oodsl --debug
-Parsing input with OODSLParser...
-Parse successful. AST type: array
-Converting array result to ProgramNode...
-Fatal error: Call to a member function accept() on array
-In: /home/ematos/devel/oo-dsl-flogic/src/CodeGen/FLogicGenerator.php line 65
-#0 /home/ematos/devel/oo-dsl-flogic/src/AST/ProgramNode.php(24): OODSLToFLogic\CodeGen\FLogicGenerator->visitProgram()
-#1 /home/ematos/devel/oo-dsl-flogic/src/CodeGen/FLogicGenerator.php(57): OODSLToFLogic\AST\ProgramNode->accept()
-#2 /home/ematos/devel/oo-dsl-flogic/src/CLI/CompilerCommand.php(158): OODSLToFLogic\CodeGen\FLogicGenerator->generate()
-#3 /home/ematos/devel/oo-dsl-flogic/src/CLI/CompilerCommand.php(32): OODSLToFLogic\CLI\CompilerCommand->compile()
-#4 /home/ematos/devel/oo-dsl-flogic/bin/oodsl-compile(62): OODSLToFLogic\CLI\CompilerCommand->run()
-#5 {main}
+php scripts/build-parser.php
+Compiling grammar from: /home/ematos/devel/oo-dsl-flogic/scripts/../src/Parser/Grammar.peg.inc
+PHP Fatal error:  Malformed rule spec */ in /home/ematos/devel/oo-dsl-flogic/vendor/smuuf/php-peg/lib/hafriedlander/Peg/Compiler/Rule.php on line 80

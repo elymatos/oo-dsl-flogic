@@ -1,0 +1,64 @@
+// tests/Examples/inheritance.oodsl
+// Inheritance example
+
+class LivingBeing {
+    string name;
+    boolean isAlive;
+}
+
+class Person inherits from LivingBeing {
+    integer age;
+    Person spouse;
+    set<Person> children;
+
+    integer calculateAgeIn(integer birthYear);
+    boolean isAdult();
+}
+
+class Employee inherits from Person {
+    string employeeId;
+    string department;
+    float salary;
+
+    float calculateTax();
+}
+
+object Mary : Person {
+    name = "Mary Smith";
+    age = 28;
+    isAlive = true;
+    children += {Alice, Bob};
+}
+
+object Alice : Person {
+    name = "Alice Smith";
+    age = 5;
+    isAlive = true;
+}
+
+object Bob : Person {
+    name = "Bob Smith";
+    age = 8;
+    isAlive = true;
+}
+
+object JohnEmployee : Employee {
+    name = "John Manager";
+    age = 35;
+    isAlive = true;
+    employeeId = "EMP001";
+    department = "Engineering";
+    salary = 75000.0;
+}
+
+method Person.calculateAgeIn(integer birthYear) returns integer {
+    return 2025 - birthYear;
+}
+
+method Person.isAdult() returns boolean {
+    return this.age >= 18;
+}
+
+method Employee.calculateTax() returns float {
+    return this.salary * 0.25;
+}
