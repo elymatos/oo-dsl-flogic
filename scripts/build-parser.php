@@ -6,7 +6,7 @@ use hafriedlander\Peg\Compiler;
 
 try {
     $grammarFile = __DIR__ . '/../src/Parser/Grammar.peg.inc';
-    $outputFile = __DIR__ . '/../src/Parser/Generated/PEGParserGenerated.php';
+    $outputFile = __DIR__ . '/../src/Parser/Generated/OODSLParser.php'; // Changed filename
 
     // Ensure output directory exists
     $outputDir = dirname($outputFile);
@@ -24,24 +24,15 @@ try {
     $grammar = file_get_contents($grammarFile);
     $result = $compiler->compile($grammar);
 
-    print_r($result);
-
     if (empty($result)) {
         throw new Exception("Compilation failed - no output generated");
     }
 
-//    // Add namespace to the generated result
-//    $namespacedResult = "<?php\n\nnamespace OODSLToFLogic\\Parser\\Generated;\n\n" .
-//        "use hafriedlander\\Peg\\Parser;\n" .
-//        "use OODSLToFLogic\\AST\\ProgramNode;\n" .
-//        "use OODSLToFLogic\\AST\\ClassNode;\n" .
-//        "use OODSLToFLogic\\Utils\\SourceLocation;\n\n" .
-//        substr($result, 5); // Remove "<?php" from beginning
-//
-    //file_put_contents($outputFile, $namespacedResult);
+    echo "✅ Grammar compiled successfully!\n";
+    echo "Generated " . strlen($result) . " bytes\n";
+
     file_put_contents($outputFile, $result);
 
-    echo "✅ Parser compiled successfully!\n";
     echo "Output: {$outputFile}\n";
 
     // Validate syntax
@@ -58,6 +49,19 @@ try {
     }
 
     echo "✅ Generated file syntax is valid\n";
+
+    // Quick check for match methods
+    $content = file_get_contents($outputFile);
+    if (strpos($content, 'match_Program') !== false) {
+        echo "✅ match_Program method found in output\n";
+    } else {
+        echo "❌ match_Program method still not found\n";
+        echo "First 20 lines of generated file:\n";
+        $lines = file($outputFile);
+        for ($i = 0; $i < min(20, count($lines)); $i++) {
+            echo sprintf("%2d: %s", $i + 1, $lines[$i]);
+        }
+    }
 
 } catch (Exception $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";

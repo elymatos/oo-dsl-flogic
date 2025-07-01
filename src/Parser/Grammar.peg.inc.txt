@@ -1,50 +1,162 @@
 <?php
-
 namespace OODSLToFLogic\Parser\Generated;
 
 use hafriedlander\Peg\Parser\Packrat;
 use OODSLToFLogic\AST\ProgramNode;
 use OODSLToFLogic\AST\ClassNode;
+use OODSLToFLogic\AST\ObjectNode;
+use OODSLToFLogic\AST\MethodNode;
+use OODSLToFLogic\AST\RuleNode;
+use OODSLToFLogic\AST\PropertyNode;
+use OODSLToFLogic\AST\MethodSignatureNode;
 use OODSLToFLogic\Utils\SourceLocation;
 
 class OODSLParser extends Packrat {
 
     /*!* OODSLParser
 
-    # Simplified Program handling
-    Program: Statement*
+    Program: _ Statement _
         function Program__finalise(&$result) {
-            $statements = [];
-
-            // Handle the case where result might be a string or array
-            if (is_array($result)) {
-                // If result is already an array, extract statements
-                foreach ($result as $key => $value) {
-                    if (is_numeric($key) && $value !== null) {
-                        $statements[] = $value;
-                    }
-                }
-            }
-
             $location = new SourceLocation(1, 1, $this->currentFilename ?? null);
-            return new ProgramNode($statements, $location);
+            return new ProgramNode(array($result), $location);
         }
 
-    Statement: ClassDefinition
+    Statement: ClassDeclaration | ObjectDeclaration | MethodDefinition | RuleDefinition | SimpleExpression
 
-    # Simple Class Definition
-    ClassDefinition: "class" __ name:Identifier __ "{" __ "}"
-        function ClassDefinition__finalise(&$result) {
+    ClassDeclaration: "class" __ Identifier InheritanceClause? _ "{" _ ClassBody _ "}"
+        function ClassDeclaration__finalise(&$result) {
             $location = new SourceLocation(1, 1);
-            $className = is_array($result['name']) ? $result['name']['text'] : $result['name'];
-            return new ClassNode($className, null, false, [], [], $location);
+            return new ClassNode(
+                $result['text'],
+                null,
+                false,
+                array(),
+                array(),
+                $location
+            );
         }
 
-    # Identifier with required spaces around regex
+    InheritanceClause: __ "inherits" InheritanceType? __ "from" __ Identifier
+
+    InheritanceType: "structure"
+
+    ObjectDeclaration: "object" __ Identifier _ ":" _ Identifier _ "{" _ ObjectBody _ "}"
+        function ObjectDeclaration__finalise(&$result) {
+            $location = new SourceLocation(1, 1);
+            return new ObjectNode(
+                $result['text'],
+                $result['text'],
+                array(),
+                $location
+            );
+        }
+
+    MethodDefinition: "method" __ QualifiedIdentifier _ "(" _ ParameterList? _ ")" __ "returns" __ Type _ "{" _ MethodBody _ "}"
+        function MethodDefinition__finalise(&$result) {
+            $location = new SourceLocation(1, 1);
+            return new MethodNode(
+                $result['text'],
+                array(),
+                $result['text'],
+                array(),
+                $location
+            );
+        }
+
+    RuleDefinition: "rule" __ Identifier _ "{" _ RuleBody _ "}"
+        function RuleDefinition__finalise(&$result) {
+            $location = new SourceLocation(1, 1);
+            return new RuleNode(
+                $result['text'],
+                array(),
+                $location
+            );
+        }
+
+    ParameterList: Parameter (_ "," _ Parameter)*
+
+    Parameter: Type __ Identifier
+
+    RuleBody: "if" _ "(" _ Condition _ ")" _ "{" _ RuleConclusion _ "}"
+
+    Condition: BooleanExpression ConditionTail*
+
+    ConditionTail: _ LogicalOperator _ BooleanExpression
+
+    LogicalOperator: "&&" | "||"
+
+    RuleConclusion: AssignmentStatement*
+
+    AssignmentStatement: QualifiedIdentifier _ "=" _ Value _ ";" _
+
+    QualifiedIdentifier: Identifier "." Identifier
+
+    MethodBody: ReturnStatement*
+
+    ReturnStatement: "return" __ Expression _ ";" _
+
+    Expression: BooleanExpression | Value
+
+    BooleanExpression: QualifiedIdentifier __ ComparisonOperator __ NumberLiteral
+
+    ComparisonOperator: ">=" | "<=" | ">" | "<" | "==" | "!="
+
+    ClassBody: ClassMember*
+
+    ClassMember: PropertyDeclaration | MethodSignature
+
+    ObjectBody: PropertyAssignment*
+
+    PropertyAssignment: Identifier _ "=" _ Value _ ";" _
+
+    PropertyDeclaration: Type __ Identifier Constraint? _ ";" _
+        function PropertyDeclaration__finalise(&$result) {
+            $location = new SourceLocation(1, 1);
+            return new PropertyNode(
+                $result['text'],
+                $result['text'],
+                false,
+                null,
+                $location
+            );
+        }
+
+    MethodSignature: Type __ Identifier _ "(" _ ParameterList? _ ")" _ ";" _
+        function MethodSignature__finalise(&$result) {
+            $location = new SourceLocation(1, 1);
+            return new MethodSignatureNode(
+                $result['text'],
+                array(),
+                $result['text'],
+                $location
+            );
+        }
+
+    Constraint: "{" ConstraintSpec "}"
+
+    ConstraintSpec: Number (".." Number)?
+
+    Value: StringLiteral | NumberLiteral | BooleanLiteral | Identifier
+
+    StringLiteral: / "[^"]*" /
+
+    NumberLiteral: / [0-9]+ /
+
+    Number: / [0-9]+ /
+
+    BooleanLiteral: "true" | "false"
+
+    Type: "string" | "integer" | "boolean" | "float"
+
+    SimpleExpression: Identifier | "hello"
+
     Identifier: / [a-zA-Z_][a-zA-Z0-9_]* /
 
-    # Whitespace with required spaces around regex
-    __: / \s* /
+    # Optional whitespace (zero or more)
+    _: / \s* /
+
+    # Required whitespace (one or more)
+    __: / \s+ /
 
     */
 
