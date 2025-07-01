@@ -1,0 +1,24 @@
+class Person {
+    float salary;
+    float bonus;
+}
+
+method Person.calculateNetSalary() returns float {
+    gross = this.salary + this.bonus;
+    tax = gross * 0.25;
+    return gross - tax;
+}
+
+method Employee.calculateBonus() returns float {
+    baseAmount = this.salary * 0.1;
+    yearsMultiplier = this.yearsOfService * 0.02;
+    bonus = baseAmount + (baseAmount * yearsMultiplier);
+    return bonus;
+}
+
+method Person.getFullInfo() returns string {
+    firstName = this.firstName;
+    lastName = this.lastName;
+    age = this.age;
+    return firstName + " " + lastName + " (" + age + ")";
+}

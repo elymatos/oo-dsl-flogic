@@ -15,4 +15,6 @@ interface NodeVisitor
     public function visitRule(RuleNode $node): mixed;
     public function visitType(TypeNode $node): mixed;
     public function visitExpression(ExpressionNode $node): mixed;
+    public function visitLocalVariable(LocalVariableNode $node): mixed;
+    public function visitVariableReference(VariableReferenceNode $node): mixed;
 }

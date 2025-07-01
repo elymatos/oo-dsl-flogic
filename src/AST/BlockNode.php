@@ -9,6 +9,8 @@ use OODSLToFLogic\Utils\SourceLocation;
  */
 class BlockNode extends ExpressionNode
 {
+    // Add this property to your BlockNode class
+    public array $localVariables = [];
     /**
      * @param Node[] $statements
      */

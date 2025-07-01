@@ -1,0 +1,5 @@
+// Generated F-Logic code from OO-DSL
+// Module: main
+
+// Method implementation: Person.test
+?Obj:Person[test() -> ?Result] :- ?X = 10, ?Y = 20, ?Result = (?X + ?Y).

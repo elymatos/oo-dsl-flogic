@@ -22,6 +22,12 @@ use OODSLToFLogic\AST\PropertyNode;
 use OODSLToFLogic\AST\RuleNode;
 use OODSLToFLogic\AST\SetLiteralNode;
 use OODSLToFLogic\AST\TypeNode;
+use OODSLToFLogic\AST\LocalVariableNode;
+use OODSLToFLogic\AST\VariableReferenceNode;
+use OODSLToFLogic\AST\StringMethodCallNode;
+use OODSLToFLogic\AST\VariableDeclarationNode;
+use OODSLToFLogic\AST\VariableAssignmentNode;
+use OODSLToFLogic\Utils\SymbolTable;
 use OODSLToFLogic\Utils\SourceLocation;
 use OODSLToFLogic\Utils\ErrorHandler;
 
@@ -29,7 +35,7 @@ use OODSLToFLogic\Utils\ErrorHandler;
  * Simple manual parser for OO-DSL (alternative to PEG)
  * This is a working implementation while you set up php-peg
  */
-class SimpleParser
+class SimpleParser implements ParserInterface
 {
     private ErrorHandler $errorHandler;
     private array $tokens = [];
@@ -89,6 +95,9 @@ class SimpleParser
         $patterns = [
             'WHITESPACE' => '/^\s+/',
             'COMMENT' => '/^\/\/[^\n]*|\/\*.*?\*\//s',
+            'LET' => '/^let\b/',
+            'VAR' => '/^var\b/',
+            'CONST' => '/^const\b/',
             'CLASS' => '/^class\b/',
             'OBJECT' => '/^object\b/',
             'METHOD' => '/^method\b/',
@@ -481,16 +490,19 @@ class SimpleParser
         $this->consume('LBRACE', 'Expected "{"');
 
         $statements = [];
+        $symbolTable = new SymbolTable(); // Local scope for this block
 
         while (!$this->check('RBRACE') && !$this->isAtEnd()) {
-            // For now, just parse simple return statements
-            if ($this->match('IDENTIFIER')) {
-                $token = $this->previous();
-                if ($token['value'] === 'return') {
+            if ($this->check('IDENTIFIER')) {
+                $token = $this->getCurrentToken();
+                $tokenValue = $token['value'];
+
+                if ($tokenValue === 'return') {
+                    // Return statement
+                    $this->advance(); // consume 'return'
                     $expr = $this->parseExpression();
                     $this->consume('SEMICOLON', 'Expected ";"');
 
-                    // Create a simple assignment representing the return
                     $statements[] = new AssignmentNode(
                         'return',
                         '=',
@@ -498,29 +510,17 @@ class SimpleParser
                         $this->getCurrentLocation()
                     );
                 } else {
-                    // Put the token back and parse as assignment
-                    $this->position--;
-                    $propertyName = $this->consume('IDENTIFIER', 'Expected identifier')['value'];
-
-                    $operator = '=';
-                    if ($this->match('ASSIGN_ADD')) {
-                        $operator = '+=';
-                    } elseif ($this->match('ASSIGN_SUB')) {
-                        $operator = '-=';
-                    } else {
-                        $this->consume('ASSIGN', 'Expected assignment operator');
+                    // Regular statement - could be assignment
+                    $statement = $this->parseBlockStatement($symbolTable);
+                    if ($statement) {
+                        $statements[] = $statement;
                     }
-
-                    $value = $this->parseExpression();
-                    $this->consume('SEMICOLON', 'Expected ";"');
-
-                    $statements[] = new AssignmentNode(
-                        $propertyName,
-                        $operator,
-                        $value,
-                        $this->getCurrentLocation()
-                    );
                 }
+            } elseif ($this->match('LET', 'VAR', 'CONST')) {
+                // Variable declaration with keyword
+                $keyword = $this->previous()['value'];
+                $statement = $this->parseVariableDeclaration($keyword, $symbolTable);
+                $statements[] = $statement;
             } else {
                 throw new \Exception("Expected statement in block");
             }
@@ -528,9 +528,71 @@ class SimpleParser
 
         $this->consume('RBRACE', 'Expected "}"');
 
-        return new BlockNode($statements, $this->getCurrentLocation());
+        $block = new BlockNode($statements, $this->getCurrentLocation());
+        $block->symbolTable = $symbolTable; // Store symbol table
+
+        return $block;
     }
 
+    private function parseBlockStatement(SymbolTable $symbolTable): ?Node
+    {
+        // Check if this looks like a variable assignment or declaration
+        $lookahead = $this->position + 1;
+        if ($lookahead < count($this->tokens) && $this->tokens[$lookahead]['type'] === 'ASSIGN') {
+            $varName = $this->advance()['value']; // consume variable name
+            $this->consume('ASSIGN', 'Expected "="');
+            $value = $this->parseExpression();
+            $this->consume('SEMICOLON', 'Expected ";"');
+
+            // Check if variable is declared
+            if ($symbolTable->hasVariable($varName)) {
+                // Variable assignment
+                $symbolTable->assignVariable($varName);
+                return new VariableAssignmentNode($varName, '=', $value, $this->getCurrentLocation());
+            } else {
+                // Implicit variable declaration (old style)
+                $symbolTable->declareVariable($varName, 'var');
+                return new LocalVariableNode($varName, $value, $this->getCurrentLocation());
+            }
+        }
+
+        // Regular property assignment or other statements
+        $propertyName = $this->consume('IDENTIFIER', 'Expected identifier')['value'];
+
+        $operator = '=';
+        if ($this->match('ASSIGN_ADD')) {
+            $operator = '+=';
+        } elseif ($this->match('ASSIGN_SUB')) {
+            $operator = '-=';
+        } else {
+            $this->consume('ASSIGN', 'Expected assignment operator');
+        }
+
+        $value = $this->parseExpression();
+        $this->consume('SEMICOLON', 'Expected ";"');
+
+        return new AssignmentNode($propertyName, $operator, $value, $this->getCurrentLocation());
+    }
+
+    private function parseVariableDeclaration(string $keyword, SymbolTable $symbolTable): VariableDeclarationNode
+    {
+        $varName = $this->consume('IDENTIFIER', 'Expected variable name')['value'];
+
+        // Optional type annotation after name: let name: string = "John"
+        $type = null;
+        if ($this->match('COLON')) {
+            $type = $this->parseType();
+        }
+
+        $this->consume('ASSIGN', 'Expected "="');
+        $value = $this->parseExpression();
+        $this->consume('SEMICOLON', 'Expected ";"');
+
+        // Declare in symbol table
+        $symbolTable->declareVariable($varName, $keyword, $type?->name);
+
+        return new VariableDeclarationNode($keyword, $varName, $value, $type, $this->getCurrentLocation());
+    }
     private function parseExpression(): ExpressionNode
     {
         return $this->parseLogicalOr();
@@ -671,6 +733,20 @@ class SimpleParser
                 $memberName = $this->consume('IDENTIFIER', 'Expected member name')['value'];
 
                 if ($this->match('LPAREN')) {
+                    // Check if this is a string method FIRST
+                    if (in_array($memberName, ['length', 'toUpperCase', 'toLowerCase', 'trim', 'substring', 'indexOf', 'replace'])) {
+                        // Parse string method arguments
+                        $args = [];
+                        if (!$this->check('RPAREN')) {
+                            do {
+                                $args[] = $this->parseExpression();
+                            } while ($this->match('COMMA'));
+                        }
+                        $this->consume('RPAREN', 'Expected ")"');
+
+                        $objectNode = new IdentifierNode($name, $this->getCurrentLocation());
+                        return new StringMethodCallNode($objectNode, $memberName, $args, $this->getCurrentLocation());
+                    }
                     // Method call
                     $args = [];
 
@@ -721,11 +797,24 @@ class SimpleParser
 
                             $collection = $name . '.' . $memberName;
                             return new CollectionMethodCallNode($collection, $methodName, [], $this->getCurrentLocation());
+                        } elseif (in_array($methodName, ['length', 'toUpperCase', 'toLowerCase', 'trim', 'substring', 'indexOf', 'replace'])) {
+                            // String method on property access (e.g., Person.name.length())
+                            $this->advance(); // consume method name
+                            $this->consume('LPAREN', 'Expected "("');
+
+                            $args = [];
+                            if (!$this->check('RPAREN')) {
+                                do {
+                                    $args[] = $this->parseExpression();
+                                } while ($this->match('COMMA'));
+                            }
+                            $this->consume('RPAREN', 'Expected ")"');
+
+                            return new StringMethodCallNode($result, $methodName, $args, $this->getCurrentLocation());
                         } else {
                             // Put back the DOT for normal property chaining
                             $this->position--;
-                        }
-                    }
+                        }                    }
 
                     // Handle normal chained property access
                     while ($this->match('DOT')) {
@@ -749,8 +838,8 @@ class SimpleParser
                     return $result;
                 }
             } else {
-                // Simple identifier
-                return new IdentifierNode($name, $this->getCurrentLocation());
+                /// Simple identifier - could be a variable reference
+                return new VariableReferenceNode($name, $this->getCurrentLocation());
             }
         }
 

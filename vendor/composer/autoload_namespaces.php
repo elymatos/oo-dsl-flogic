@@ -6,4 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'hafriedlander\\Peg' => array($vendorDir . '/smuuf/php-peg/lib'),
 );
