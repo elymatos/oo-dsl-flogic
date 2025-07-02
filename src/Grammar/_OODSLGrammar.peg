@@ -1,0 +1,110 @@
+<?php
+// src/Grammar/OODSLGrammar.peg
+// F-Logic ErgoAI DSL Grammar using PEG
+
+namespace FLogicDSL\Parser;
+
+use hafriedlander\Peg\Parser\Packrat;
+
+class OODSLParser extends Packrat {
+
+/*!*
+
+Program: Statement*
+
+Statement: ClassDeclaration | ObjectDeclaration | MethodDeclaration | RuleDeclaration | Comment | __
+
+Comment: "//" / [^\n]* /
+
+ClassDeclaration: "class" _ Identifier InheritanceClause? __ "{" __ ClassBody __ "}"
+
+InheritanceClause: _ "inherits" _ "from" _ Identifier
+
+ClassBody: ClassMember*
+
+ClassMember: PropertyDeclaration | MethodSignature | MethodImplementation | __
+
+PropertyDeclaration: Type _ Identifier CardinalityConstraint? __ ";"
+
+CardinalityConstraint: "{" IntegerLiteral ".." IntegerLiteral "}"
+
+MethodSignature: Type _ Identifier "(" ParameterList? ")" __ ";"
+
+MethodImplementation: Type _ Identifier "(" ParameterList? ")" __ MethodBody
+
+ParameterList: Parameter ( "," __ Parameter )*
+
+Parameter: Type _ Identifier
+
+MethodBody: "{" __ MethodStatement* __ "}"
+
+MethodStatement: VariableDeclaration | Assignment | ReturnStatement | __
+
+VariableDeclaration: ( "let" | "var" ) _ Identifier __ "=" __ Expression __ ";"
+
+ReturnStatement: "return" _ Expression __ ";"
+
+ObjectDeclaration: "object" _ Identifier ":" _ Identifier __ "{" __ ObjectBody __ "}"
+
+ObjectBody: PropertyAssignment*
+
+PropertyAssignment: Identifier __ ( "=" | "+=" ) __ Expression __ ";"
+
+MethodDeclaration: "method" _ Identifier "." Identifier "(" ParameterList? ")" __ "returns" _ Type __ MethodBody
+
+RuleDeclaration: "rule" _ Identifier __ "{" __ RuleBody __ "}"
+
+RuleBody: "if" __ "(" __ Condition __ ")" __ "{" __ Action __ "}"
+
+Action: Assignment
+
+Assignment: ChainedExpression __ "=" __ Expression __ ";"
+
+Condition: OrCondition
+
+OrCondition: AndCondition ( __ "||" __ AndCondition )*
+
+AndCondition: ComparisonCondition ( __ "&&" __ ComparisonCondition )*
+
+ComparisonCondition: "(" __ Condition __ ")" | Comparison
+
+Comparison: Expression __ ComparisonOperator __ Expression
+
+ComparisonOperator: "==" | "!=" | "<=" | ">=" | "<" | ">"
+
+Expression: ChainedExpression | SetExpression | MethodCall | Literal | Identifier
+
+ChainedExpression: ( Identifier | "this" ) ( "." ( MethodCall | Identifier ) )+
+
+SetExpression: "{" __ ( Identifier ( "," __ Identifier )* )? __ "}"
+
+MethodCall: Identifier "(" ArgumentList? ")"
+
+ArgumentList: Expression ( "," __ Expression )*
+
+Type: CollectionType | PrimitiveType | Identifier
+
+PrimitiveType: "string" | "integer" | "float" | "boolean"
+
+CollectionType: ( "set" | "list" ) "<" Type ">"
+
+Literal: StringLiteral | FloatLiteral | IntegerLiteral | BooleanLiteral
+
+StringLiteral: '"' /([^"]*)/ '"'
+
+IntegerLiteral: /[0-9]+/
+
+FloatLiteral: /[0-9]+\.[0-9]+/
+
+BooleanLiteral: "true" | "false"
+
+Identifier: /([a-zA-Z_][a-zA-Z0-9_]*)/
+
+_: /\s+/
+
+__: /(\s*)/
+
+*/
+
+}
+?>

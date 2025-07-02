@@ -1,0 +1,3 @@
+php scripts/build-parser.php
+Compiling grammar from: /home/ematos/devel/oo-dsl-flogic/scripts/../src/Parser/Grammar.peg.inc
+PHP Fatal error:  Malformed rule spec */ in /home/ematos/devel/oo-dsl-flogic/vendor/smuuf/php-peg/lib/hafriedlander/Peg/Compiler/Rule.php on line 80

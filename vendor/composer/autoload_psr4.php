@@ -7,8 +7,8 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'PhpParser\\' => array($vendorDir . '/nikic/php-parser/lib/PhpParser'),
-    'OODSLToFLogic\\Tests\\' => array($baseDir . '/tests'),
-    'OODSLToFLogic\\' => array($baseDir . '/src'),
+    'FLogicDSL\\Tests\\' => array($baseDir . '/tests'),
+    'FLogicDSL\\' => array($baseDir . '/src'),
     'Doctrine\\Instantiator\\' => array($vendorDir . '/doctrine/instantiator/src/Doctrine/Instantiator'),
     'DeepCopy\\' => array($vendorDir . '/myclabs/deep-copy/src/DeepCopy'),
 );
