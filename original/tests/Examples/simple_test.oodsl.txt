@@ -1,0 +1,10 @@
+// Simple test
+class Vehicle {
+    string brand;
+    integer year;
+}
+
+object Honda : Vehicle {
+    brand = "Honda";
+    year = 2020;
+}

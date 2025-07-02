@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
-        'name' => 'your-org/oo-dsl-flogic',
+        'name' => 'your-org/flogic-dsl-parser',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '19f9f86b8459670172d73ae5e208c2036b0b300e',
+        'reference' => 'e1ac256dfa9fd7a147c3906d6d6eb16e51136bf9',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -52,15 +52,6 @@
             'reference' => '4f7fd7836c6f332bb2933569e566a0d6c4cbed74',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phar-io/version',
-            'aliases' => array(),
-            'dev_requirement' => true,
-        ),
-        'phpstan/phpstan' => array(
-            'pretty_version' => '1.12.27',
-            'version' => '1.12.27.0',
-            'reference' => '3a6e423c076ab39dfedc307e2ac627ef579db162',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../phpstan/phpstan',
             'aliases' => array(),
             'dev_requirement' => true,
         ),
@@ -271,15 +262,6 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
-        'squizlabs/php_codesniffer' => array(
-            'pretty_version' => '3.13.2',
-            'version' => '3.13.2.0',
-            'reference' => '5b5e3821314f947dd040c70f7992a64eac89025c',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../squizlabs/php_codesniffer',
-            'aliases' => array(),
-            'dev_requirement' => true,
-        ),
         'theseer/tokenizer' => array(
             'pretty_version' => '1.2.3',
             'version' => '1.2.3.0',
@@ -289,10 +271,10 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
-        'your-org/oo-dsl-flogic' => array(
+        'your-org/flogic-dsl-parser' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '19f9f86b8459670172d73ae5e208c2036b0b300e',
+            'reference' => 'e1ac256dfa9fd7a147c3906d6d6eb16e51136bf9',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

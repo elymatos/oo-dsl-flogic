@@ -23,7 +23,7 @@ if (!$autoloadFound) {
 }
 
 // Check if PEG parser is built - Updated filename
-$pegParserFile = __DIR__ . '/../src/Parser/Generated/OODSLParser.php';
+$pegParserFile = __DIR__ . '/../src/Parser/OODSLParser.php';
 if (!file_exists($pegParserFile)) {
     fwrite(STDERR, "Error: PEG parser not built.\n");
     fwrite(STDERR, "Run: php scripts/build-parser.php\n");

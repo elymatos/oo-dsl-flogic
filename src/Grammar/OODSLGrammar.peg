@@ -1,0 +1,248 @@
+<?php
+
+namespace FLogicDSL\Parser;
+
+use hafriedlander\Peg\Parser\Basic;
+
+class OODSLParser extends Basic {
+
+/*!*
+
+Program: ( Statement )*
+
+Statement: ClassDecl | ObjectDecl | RuleDecl | Comment | /\s+/
+
+ClassDecl: "class" /\s+/ Identifier Inheritance? /(\s*)/ "{" ClassBody "}"
+
+Inheritance: /\s+/ "inherits" /\s+/ "from" /\s+/ Identifier
+
+ClassBody: ( PropertyDecl | /\s+/ )*
+
+PropertyDecl: /(\s*)/ DataType /\s+/ Identifier /(\s*)/ ";" /(\s*)/
+
+ObjectDecl: "object" /\s+/ Identifier /(\s*)/ ":" /(\s*)/ Identifier /(\s*)/ "{" ObjectBody "}"
+
+ObjectBody: ( PropertyAssign | /\s+/ )*
+
+PropertyAssign: /(\s*)/ Identifier /(\s*)/ "=" /(\s*)/ Value /(\s*)/ ";" /(\s*)/
+
+RuleDecl: "rule" /\s+/ Identifier /(\s*)/ "{" /(\s*)/ "if" /(\s*)/ "(" /(\s*)/ Condition /(\s*)/ ")" /(\s*)/ "{" /(\s*)/ Action /(\s*)/ "}" /(\s*)/ "}"
+
+Condition: Expr /(\s*)/ CompOp /(\s*)/ Expr
+
+Action: Expr /(\s*)/ "=" /(\s*)/ Expr /(\s*)/ ";"
+
+Expr: DottedName | Value
+
+DottedName: Identifier ( "." Identifier )*
+
+Value: StringLit | Number | Bool | Identifier
+
+StringLit: /"[^"]*"/
+
+Number: /[0-9]+(\.[0-9]+)?/
+
+Bool: "true" | "false"
+
+CompOp: ">=" | "<=" | "==" | "!=" | ">" | "<"
+
+DataType: SimpleType
+
+SimpleType: "string" | "integer" | "float" | "boolean"
+
+Identifier: /[a-zA-Z_][a-zA-Z0-9_]* /
+
+Comment: /\/\/[^\n]*\n?/
+
+*/
+
+function Program__finalise(&$result) {
+    $statements = array();
+
+    if (is_array($result)) {
+        foreach ($result as $item) {
+            if ($item && is_array($item) && isset($item['type'])) {
+                $statements[] = $item;
+            }
+        }
+    }
+
+    return array(
+        'type' => 'Program',
+        'statements' => $statements
+    );
+}
+
+function ClassDecl__finalise(&$result) {
+    // Simple text parsing as fallback
+    $text = $result['text'] ?? '';
+
+    if (preg_match('/class\s+(\w+)/', $text, $matches)) {
+        $className = $matches[1];
+    } else {
+        $className = 'Unknown';
+    }
+
+    $parentClass = null;
+    if (preg_match('/inherits\s+from\s+(\w+)/', $text, $matches)) {
+        $parentClass = $matches[1];
+    }
+
+    // Extract properties
+    $properties = array();
+    if (preg_match_all('/(\w+)\s+(\w+)(\s*);/', $text, $matches, PREG_SET_ORDER)) {
+        foreach ($matches as $match) {
+            $properties[] = array(
+                'type' => 'PropertyDeclaration',
+                'dataType' => $match[1],
+                'name' => $match[2]
+            );
+        }
+    }
+
+    return array(
+        'type' => 'ClassDeclaration',
+        'name' => $className,
+        'parentClass' => $parentClass,
+        'properties' => $properties
+    );
+}
+
+function ObjectDecl__finalise(&$result) {
+    $text = $result['text'] ?? '';
+
+    $objectName = 'Unknown';
+    $className = 'Unknown';
+
+    if (preg_match('/object\s+(\w+)(\s*):(\s*)(\w+)/', $text, $matches)) {
+        $objectName = $matches[1];
+        $className = $matches[2];
+    }
+
+    // Extract property assignments
+    $properties = array();
+    if (preg_match_all('/(\w+)(\s*)=(\s*)([^;]+);/', $text, $matches, PREG_SET_ORDER)) {
+        foreach ($matches as $match) {
+            $value = $this->parseValueFromText(trim($match[2]));
+            $properties[] = array(
+                'type' => 'PropertyAssignment',
+                'name' => $match[1],
+                'value' => $value
+            );
+        }
+    }
+
+    return array(
+        'type' => 'ObjectDeclaration',
+        'name' => $objectName,
+        'className' => $className,
+        'properties' => $properties
+    );
+}
+
+function RuleDecl__finalise(&$result) {
+    $text = $result['text'] ?? '';
+
+    $ruleName = 'Unknown';
+    if (preg_match('/rule\s+(\w+)/', $text, $matches)) {
+        $ruleName = $matches[1];
+    }
+
+    // Extract condition and action
+    $condition = array();
+    $action = array();
+
+    if (preg_match('/if(\s*)\((\s*)([^)]+)\)/', $text, $matches)) {
+        $conditionText = trim($matches[1]);
+        if (preg_match('/([^<>=!]+)(\s*)(>=|<=|==|!=|>|<)(\s*)(.+)/', $conditionText, $condMatches)) {
+            $condition = array(
+                'type' => 'Comparison',
+                'left' => $this->parseExpressionFromText(trim($condMatches[1])),
+                'operator' => $condMatches[2],
+                'right' => $this->parseExpressionFromText(trim($condMatches[3]))
+            );
+        }
+    }
+
+    if (preg_match('/\{(\s*)([^}]+)(\s*)\}(\s*)\}/', $text, $matches)) {
+        $actionText = trim($matches[1]);
+        if (preg_match('/([^=]+)(\s*)=(\s*)([^;]+);/', $actionText, $actMatches)) {
+            $action = array(
+                'type' => 'Assignment',
+                'target' => $this->parseExpressionFromText(trim($actMatches[1])),
+                'value' => $this->parseExpressionFromText(trim($actMatches[2]))
+            );
+        }
+    }
+
+    return array(
+        'type' => 'RuleDeclaration',
+        'name' => $ruleName,
+        'condition' => $condition,
+        'action' => $action
+    );
+}
+
+function parseValueFromText($text) {
+    $text = trim($text);
+
+    // String literal
+    if (preg_match('/^"([^"]*)"$/', $text, $matches)) {
+        return array(
+            'type' => 'StringLiteral',
+            'value' => $matches[1]
+        );
+    }
+
+    // Number
+    if (preg_match('/^[0-9]+(\.[0-9]+)?$/', $text)) {
+        $isFloat = strpos($text, '.') !== false;
+        return array(
+            'type' => $isFloat ? 'FloatLiteral' : 'IntegerLiteral',
+            'value' => $isFloat ? (float)$text : (int)$text
+        );
+    }
+
+    // Boolean
+    if ($text === 'true' || $text === 'false') {
+        return array(
+            'type' => 'BooleanLiteral',
+            'value' => $text === 'true'
+        );
+    }
+
+    // Identifier
+    return array(
+        'type' => 'Identifier',
+        'name' => $text
+    );
+}
+
+function parseExpressionFromText($text) {
+    $text = trim($text);
+
+    // Check for dotted name
+    if (strpos($text, '.') !== false) {
+        $parts = explode('.', $text);
+        $parts = array_map('trim', $parts);
+        return array(
+            'type' => 'ChainedExpression',
+            'parts' => $parts
+        );
+    }
+
+    // Try to parse as value first
+    $value = $this->parseValueFromText($text);
+    if ($value['type'] !== 'Identifier') {
+        return $value;
+    }
+
+    // Return as identifier
+    return array(
+        'type' => 'Identifier',
+        'name' => $text
+    );
+}
+
+}
+?>

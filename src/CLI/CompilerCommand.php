@@ -1,13 +1,9 @@
 <?php
 
-namespace OODSLToFLogic\CLI;
+namespace FLogicDSL\CLI;
 
-use OODSLToFLogic\Parser\Generated\OODSLParser;
-use OODSLToFLogic\CodeGen\FLogicGenerator;
-use OODSLToFLogic\AST\ProgramNode;
-use OODSLToFLogic\AST\ClassNode;
-use OODSLToFLogic\AST\ObjectNode;
-use OODSLToFLogic\Utils\SourceLocation;
+use FLogicDSL\Parser\OODSLParser;
+
 use Exception;
 
 class CompilerCommand

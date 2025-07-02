@@ -1,3 +1,22 @@
-php scripts/build-parser.php
-Compiling grammar from: /home/ematos/devel/oo-dsl-flogic/scripts/../src/Parser/Grammar.peg.inc
-PHP Fatal error:  Malformed rule spec */ in /home/ematos/devel/oo-dsl-flogic/vendor/smuuf/php-peg/lib/hafriedlander/Peg/Compiler/Rule.php on line 80
+php bin/test-parser.php
+=== OODSL Parser Test ===
+
+Input DSL:
+----------
+class Vehicle {
+    string brand;
+    integer year;
+}
+
+object Honda : Vehicle {
+    brand = "Honda";
+    year = 2020;
+}
+
+rule ModernVehicle {
+    if (Vehicle.year >= 2020) {
+        Vehicle.isModern = true;
+    }
+}
+
+PHP Parse error:  syntax error, unexpected double-quoted string "\n", expecting "function" in /home/ematos/devel/oo-dsl-flogic/src/Parser/OODSLParser.php on line 15
