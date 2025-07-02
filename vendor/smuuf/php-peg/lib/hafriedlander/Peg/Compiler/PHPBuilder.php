@@ -4,141 +4,126 @@ namespace hafriedlander\Peg\Compiler;
 
 class PHPBuilder {
 
-	private array $lines = [];
-
 	static function build () {
-		return new PHPBuilder;
+		return new PHPBuilder() ;
 	}
 
-	function l(...$args) {
+	function __construct() {
+		$this->lines = array() ;
+	}
 
-		foreach ($args as $lines) {
+	function l() {
+		foreach ( func_get_args() as $lines ) {
+			if ( !$lines ) continue ;
 
-			if (!$lines) {
-				continue;
-			}
+			if ( is_string( $lines ) ) $lines = preg_split( '/\r\n|\r|\n/', $lines ) ;
+			if ( !$lines ) continue ;
 
-			if (\is_string($lines)) {
-				$lines = preg_split('/\r\n|\r|\n/', $lines);
-			}
+			if ( $lines instanceof PHPBuilder ) $lines = $lines->lines ;
+			else                                $lines = array_map( 'ltrim', $lines ) ;
+			if ( !$lines ) continue ;
 
-			if ($lines instanceof self) {
-				$lines = $lines->lines;
-			} else {
-				$lines = \array_map('rtrim', $lines);
-			}
+			$this->lines = array_merge( $this->lines, $lines ) ;
+		}
+		return $this ;
+	}
 
-			if (!$lines) {
-				continue;
-			}
+	function b() {
+		$args = func_get_args() ;
+		$entry = array_shift( $args ) ;
 
-			$this->lines = \array_merge($this->lines, $lines);
+		$block = new PHPBuilder() ;
+		call_user_func_array( array( $block, 'l' ), $args ) ;
 
+		$this->lines[] = array( $entry, $block->lines ) ;
+
+		return $this ;
+	}
+
+	function replace( $replacements, &$array = NULL ) {
+		if ( $array === NULL ) {
+			unset( $array ) ;
+			$array =& $this->lines ;
 		}
 
-		return $this;
-	}
-
-	function b(...$args) {
-
-		$entry = \array_shift($args);
-
-		$block = new PHPBuilder;
-		$block->l(...$args);
-		$this->lines[] = [$entry, $block->lines];
-
-		return $this;
-	}
-
-	function replace(array $replacements, array &$array = \null) {
-		if ($array === \null) {
-			unset($array);
-			$array =& $this->lines;
-		}
-
-		$i = 0;
-		while ($i < \count($array)) {
+		$i = 0 ;
+		while ( $i < count( $array ) ) {
 
 			/* Recurse into blocks */
-			if (\is_array($array[$i])) {
-				$this->replace($replacements, $array[$i][1]);
+			if ( is_array( $array[$i] ) ) {
+				$this->replace( $replacements, $array[$i][1] ) ;
 
-				if (\count($array[$i][1]) === 0) {
-					$nextelse = isset($array[$i + 1])
-						&& \is_array($array[$i + 1])
-						&& \preg_match('/^\s*else\s*$/i', $array[$i + 1][0]);
+				if ( count( $array[$i][1] ) == 0 ) {
+					$nextelse = isset( $array[$i+1] ) && is_array( $array[$i+1] ) && preg_match( '/^\s*else\s*$/i', $array[$i+1][0] ) ;
 
-					$delete = \preg_match('/^\s*else\s*$/i', $array[$i][0]);
-					$delete = $delete || (\preg_match('/^\s*if\s*\(/i', $array[$i][0]) && !$nextelse);
+					$delete = preg_match( '/^\s*else\s*$/i', $array[$i][0] ) ;
+					$delete = $delete || ( preg_match( '/^\s*if\s*\(/i', $array[$i][0] ) && !$nextelse ) ;
 
-					if ($delete) {
+					if ( $delete ) {
 						// Is this always safe? Not if the expression has side-effects.
-						// print "/* REMOVING EMPTY BLOCK: " . $array[$i][0] . "*/\n";
-						\array_splice($array, $i, 1);
-						continue;
+						// print "/* REMOVING EMPTY BLOCK: " . $array[$i][0] . "*/\n" ;
+						array_splice( $array, $i, 1 ) ;
+						continue ;
 					}
-				}
-			} else {
-				/* Handle replacing lines with \null to remove, or string, array of strings or PHPBuilder to replace */
-				if (\array_key_exists($array[$i], $replacements)) {
-					$rep = $replacements[$array[$i]];
-
-					if ($rep === \null) {
-						\array_splice($array, $i, 1);
-						continue;
-					}
-
-					if (\is_string($rep)) {
-						$array[$i] = $rep;
-						$i++ ;
-						continue;
-					}
-
-					if ($rep instanceof self) {
-						$rep = $rep->lines;
-					}
-
-					if (\is_array($rep)) {
-						\array_splice($array, $i, 1, $rep); $i += \count($rep) + 1;
-						continue;
-					}
-
-					throw new \Exception('Unknown type passed to PHPBuilder#replace');
 				}
 			}
 
-			$i++;
+			/* Handle replacing lines with NULL to remove, or string, array of strings or PHPBuilder to replace */
+			else {
+				if ( array_key_exists( $array[$i], $replacements ) ) {
+					$rep = $replacements[$array[$i]] ;
+
+					if ( $rep === NULL ) {
+						array_splice( $array, $i, 1 ) ;
+						continue ;
+					}
+
+					if ( is_string( $rep ) ) {
+						$array[$i] = $rep ;
+						$i++  ;
+						continue ;
+					}
+
+					if ( $rep instanceof PHPBuilder ) $rep = $rep->lines ;
+
+					if ( is_array( $rep ) ) {
+						array_splice( $array, $i, 1, $rep ) ; $i += count( $rep ) + 1 ;
+						continue ;
+					}
+
+					throw new \Exception('Unknown type passed to PHPBuilder#replace') ;
+				}
+			}
+
+			$i++ ;
 		}
 
-		return $this;
+		return $this ;
 	}
 
-	function render(?array $array = \null, string $indent = ""): string {
+	function render( $array = NULL, $indent = "" ) {
+		if ( $array === NULL ) $array = $this->lines ;
 
-		if ($array === \null) {
-			$array = $this->lines;
-		}
+		$out = array() ;
+		foreach( $array as $line ) {
+			if ( is_array( $line ) ) {
+				list( $entry, $block ) = $line ;
+				$str = $this->render( $block, $indent . "\t" ) ;
 
-		$out = [];
-		foreach ($array as $line) {
-			if (\is_array($line)) {
-				[$entry, $block] = $line;
-				$str = $this->render($block, $indent . "\t");
-
-				if (\strlen($str) < 40) {
-					$out[] = $indent . $entry . ' { ' . \ltrim($str) . ' }';
-				} else {
-					$out[] = $indent . $entry . ' {';
-					$out[] = $str;
-					$out[] = $indent . '}';
+				if ( strlen( $str ) < 40 ) {
+					$out[] = $indent . $entry . ' { ' . ltrim( $str ) . ' }' ;
 				}
-			} else {
-				$out[] = $indent . $line;
+				else {
+					$out[] = $indent . $entry . ' {' ;
+					$out[] = $str ;
+					$out[] = $indent . '}' ;
+				}
+			}
+			else {
+				$out[] = $indent . $line ;
 			}
 		}
 
-		return \implode(\PHP_EOL, $out);
-
+		return implode( PHP_EOL, $out ) ;
 	}
-
 }

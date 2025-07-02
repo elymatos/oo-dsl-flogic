@@ -10,8 +10,8 @@ echo "Parser Generator\n";
 echo "================\n\n";
 
 try {
-    $grammarFile = __DIR__ . '/../src/Grammar/OODSLGrammar.peg';
-    $outputFile = __DIR__ . '/../src/Parser/OODSLParser.php';
+    $grammarFile = __DIR__ . '/../src/Parser/Grammar.peg.inc';
+    $outputFile = __DIR__ . '/../src/Parser/Generated/OODSLParser.php';
 
     // Ensure output directory exists
     $outputDir = dirname($outputFile);

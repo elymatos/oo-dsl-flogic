@@ -1,0 +1,176 @@
+// Example OO-DSL file demonstrating the syntax
+
+module PersonDomain {
+
+    // Base class definition
+    class LivingBeing {
+        string name;
+        integer age;
+        boolean isAlive;
+
+        boolean isAdult();
+    }
+
+    // Person class with inheritance
+    class Person inherits from LivingBeing {
+        string email;
+        Person spouse;
+        set<Person>{0..10} children;
+        boolean isVegetarian;
+        string address;
+
+        // Method signatures
+        integer calculateAgeIn(integer year);
+        boolean hasChildren();
+        boolean isMarried();
+    }
+
+    // Company class
+    class Company {
+        string name;
+        string address;
+        set<Person> employees;
+        Person ceo;
+
+        integer getEmployeeCount();
+    }
+
+    // Employee class with multiple inheritance concepts
+    class Employee inherits from Person {
+        string employeeId;
+        Company employer;
+        float salary;
+        string department;
+
+        float getAnnualSalary();
+    }
+
+    export Person, Company, Employee, LivingBeing;
+}
+
+// Import the module
+import PersonDomain.{Person, Company, Employee};
+
+// Object instances
+object John : Person {
+    name = "John Doe";
+    age = 30;
+    email = "john.doe@email.com";
+    isVegetarian = true;
+    isAlive = true;
+    address = "123 Main St";
+}
+
+object Mary : Person {
+    name = "Mary Smith";
+    age = 28;
+    email = "mary.smith@email.com";
+    isVegetarian = true;
+    isAlive = true;
+    address = "456 Oak Ave";
+}
+
+object Bob : Person {
+    name = "Bob Johnson";
+    age = 8;
+    isAlive = true;
+    address = "123 Main St";
+}
+
+object Alice : Person {
+    name = "Alice Johnson";
+    age = 6;
+    isAlive = true;
+    address = "123 Main St";
+}
+
+object TechCorp : Company {
+    name = "TechCorp Inc";
+    address = "789 Business Blvd";
+    ceo = John;
+}
+
+// Define relationships
+object JohnUpdated : Person {
+    name = "John Doe";
+    spouse = Mary;
+    children += {Bob, Alice};
+}
+
+object MaryUpdated : Person {
+    name = "Mary Smith";
+    spouse = John;
+    children += {Bob, Alice};
+}
+
+// Method implementations
+method Person.calculateAgeIn(integer birthYear) returns integer {
+    return 2025 - birthYear;
+}
+
+method Person.isAdult() returns boolean {
+    return this.age >= 18;
+}
+
+method Person.hasChildren() returns boolean {
+    return this.children.count() > 0;
+}
+
+method Person.isMarried() returns boolean {
+    return this.spouse != null;
+}
+
+method Company.getEmployeeCount() returns integer {
+    return this.employees.count();
+}
+
+method Employee.getAnnualSalary() returns float {
+    return this.salary * 12;
+}
+
+// Business rules
+rule HappyFamily {
+    if (Person.isVegetarian && Person.spouse.isVegetarian) {
+        Person.isHappy = true;
+    }
+}
+
+rule AdultWithChildren {
+    if (Person.isAdult() && Person.hasChildren()) {
+        Person.hasResponsibilities = true;
+    }
+}
+
+rule MarriedCouple {
+    if (Person.spouse != null) {
+        Person.isMarried = true;
+        Person.spouse.isMarried = true;
+    }
+}
+
+rule CompanyEmployees {
+    if (Company.employees.count() > 100) {
+        Company.isLargeCompany = true;
+    }
+}
+
+// Queries
+query FindVegetarians {
+    select Person where Person.isVegetarian == true;
+}
+
+query FindAdults {
+    select Person where Person.isAdult() == true;
+}
+
+query FindMarriedPeople {
+    select Person where Person.isMarried() == true;
+}
+
+query FindParents {
+    select Person where Person.hasChildren() == true;
+}
+
+query FindLargeCompanies {
+    select Company where Company.isLargeCompany == true;
+}

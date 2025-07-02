@@ -1,0 +1,71 @@
+#!/usr/bin/env php
+<?php
+
+// Find the autoloader
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+    __DIR__ . '/../../../../autoload.php',
+];
+
+$autoloadFound = false;
+foreach ($autoloadPaths as $autoloadPath) {
+    if (file_exists($autoloadPath)) {
+        require_once $autoloadPath;
+        $autoloadFound = true;
+        break;
+    }
+}
+
+if (!$autoloadFound) {
+    fwrite(STDERR, "Error: Could not find autoloader. Please run 'composer install'.\n");
+    exit(1);
+}
+
+// Check if PEG parser is built - Updated filename
+$pegParserFile = __DIR__ . '/../src/Parser/OODSLParser.php';
+if (!file_exists($pegParserFile)) {
+    fwrite(STDERR, "Error: PEG parser not built.\n");
+    fwrite(STDERR, "Run: php scripts/build-parser.php\n");
+    exit(1);
+}
+
+use OODSLToFLogic\CLI\CompilerCommand;
+
+// Handle uncaught exceptions with helpful hints
+set_exception_handler(function ($exception) {
+    $message = $exception->getMessage();
+
+    // Provide helpful hints for common issues
+    if (strpos($message, 'Class') !== false && strpos($message, 'not found') !== false) {
+        fwrite(STDERR, "Error: " . $message . "\n");
+        fwrite(STDERR, "Hint: Try running 'php scripts/build-parser.php' to rebuild the parser.\n");
+    } elseif (strpos($message, 'Parse error') !== false || strpos($message, 'ParseException') !== false) {
+        fwrite(STDERR, "Parse error: " . $message . "\n");
+        fwrite(STDERR, "Hint: Check your DSL syntax for errors.\n");
+    } elseif (strpos($message, 'match_Program') !== false) {
+        fwrite(STDERR, "Parser error: " . $message . "\n");
+        fwrite(STDERR, "Hint: The PEG parser may need rebuilding. Run 'php scripts/build-parser.php'.\n");
+    } else {
+        fwrite(STDERR, "Fatal error: " . $message . "\n");
+    }
+
+    if (getenv('OODSL_DEBUG') || in_array('--debug', $argv ?? [])) {
+        fwrite(STDERR, "\nStack trace:\n" . $exception->getTraceAsString() . "\n");
+    }
+    exit(1);
+});
+
+// Run the compiler
+try {
+    $compiler = new CompilerCommand();
+    $exitCode = $compiler->run($argv);
+    exit($exitCode);
+} catch (Error $e) {
+    fwrite(STDERR, "Fatal error: " . $e->getMessage() . "\n");
+    if (getenv('OODSL_DEBUG') || in_array('--debug', $argv ?? [])) {
+        fwrite(STDERR, "In: " . $e->getFile() . " line " . $e->getLine() . "\n");
+        fwrite(STDERR, $e->getTraceAsString() . "\n");
+    }
+    exit(1);
+}

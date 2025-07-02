@@ -1,0 +1,454 @@
+<?php
+
+namespace OODSLFLogic\Parser\Generated;
+
+use hafriedlander\Peg\Parser\Packrat;
+
+
+class OODSLParser extends Packrat
+{
+
+    public ?string $currentFilename = null;
+    /*!* OODSLParser
+
+        # Global whitespace rule - Crucial for backtracking
+        # This rule will automatically be applied between every token in other rules.
+        _: ( /\s+/ | LineComment | BlockComment )*
+
+        # Entry point - simplified
+        Program: Statements
+            function Program__finalise(&$result) {
+                return new ProgramNode($result['Statements'] ?? []);
+            }
+
+        # Simplified statement collection
+        Statements: Statement*
+            function Statements__finalise(&$result) {
+                $statements = [];
+                foreach ($result as $item) {
+                    if (is_object($item)) {
+                        $statements[] = $item;
+                    }
+                }
+                return $statements;
+            }
+
+        # Single statement with now implicit whitespace handling via '_'
+        Statement: Declaration
+            function Statement__finalise(&$result) {
+                return $result['Declaration'];
+            }
+
+        Declaration: ModuleDecl | ClassDecl | ObjectDecl | MethodDecl | RuleDecl | QueryDecl | ImportDecl | ExportDecl
+
+        # Module declaration
+        ModuleDecl: "module" Identifier "{" ModuleBody "}"
+            function ModuleDecl__finalise(&$result) {
+                $name = new IdentifierNode($result['Identifier']);
+                return new ModuleNode($name, $result['ModuleBody']);
+            }
+
+        ModuleBody: ModuleStatement*
+            function ModuleBody__finalise(&$result) {
+                $statements = [];
+                foreach ($result as $item) {
+                    if (isset($item['ModuleStatement']) && is_object($item['ModuleStatement'])) {
+                        $statements[] = $item['ModuleStatement'];
+                    }
+                }
+                return $statements;
+            }
+
+        ModuleStatement: ClassDecl | ObjectDecl | MethodDecl | RuleDecl | ExportDecl
+
+        # Class declaration - simplified
+        ClassDecl: "class" Identifier Inheritance? "{" ClassBody "}"
+            function ClassDecl__finalise(&$result) {
+                $name = new IdentifierNode($result['Identifier']);
+                $inheritance = $result['Inheritance'] ?? null;
+                return new ClassNode($name, $inheritance, $result['ClassBody']);
+            }
+
+        Inheritance: "inherits" ( "structure" )? "from" Identifier
+            function Inheritance__finalise(&$result) {
+                $type = (count($result) > 2) ? 'structure' : null;
+                $parent = new IdentifierNode($result[count($result)-1]);
+                return new InheritanceNode($type, $parent);
+            }
+
+        ClassBody: ClassMember*
+            function ClassBody__finalise(&$result) {
+                $members = [];
+                foreach ($result as $item) {
+                    if (isset($item['ClassMember']) && is_object($item['ClassMember'])) {
+                        $members[] = $item['ClassMember'];
+                    }
+                }
+                return $members;
+            }
+
+        ClassMember: FieldDecl | MethodSignature
+
+        # Field declaration - simplified
+        FieldDecl: TypeSpec Identifier Constraint? ";"
+            function FieldDecl__finalise(&$result) {
+                $name = new IdentifierNode($result['Identifier']);
+                $constraint = $result['Constraint'] ?? null;
+                return new FieldNode($result['TypeSpec'], $name, $constraint);
+            }
+
+        # Type specifications
+        TypeSpec: CollectionType | PrimitiveType | UserType
+
+        PrimitiveType: "string" | "integer" | "boolean" | "float"
+            function PrimitiveType__finalise(&$result) {
+                return new PrimitiveTypeNode($result['text']);
+            }
+
+        UserType: Identifier
+            function UserType__finalise(&$result) {
+                return new UserTypeNode(new IdentifierNode($result['text']));
+            }
+
+        CollectionType: CollectionKeyword "<" TypeSpec ">" Constraint?
+            function CollectionType__finalise(&$result) {
+                $constraint = $result['Constraint'] ?? null;
+                return new CollectionTypeNode($result['CollectionKeyword'], $result['TypeSpec'], $constraint);
+            }
+
+        CollectionKeyword: "set" | "list" | "bag"
+
+        Constraint: "{" ConstraintExpr "}"
+            function Constraint__finalise(&$result) {
+                return new ConstraintNode($result['ConstraintExpr']);
+            }
+
+        ConstraintExpr: Range | Number
+
+        Range: Number ".." Number
+            function Range__finalise(&$result) {
+                return new RangeNode($result['Number'][0], $result['Number'][1]);
+            }
+
+        # Method signature
+        MethodSignature: TypeSpec Identifier "(" ParamList? ")" ";"
+            function MethodSignature__finalise(&$result) {
+                $name = new IdentifierNode($result['Identifier']);
+                $params = $result['ParamList'] ?? [];
+                return new MethodSignatureNode($result['TypeSpec'], $name, $params);
+            }
+
+        # Object declaration
+        ObjectDecl: "object" Identifier ":" Identifier "{" ObjectBody "}"
+            function ObjectDecl__finalise(&$result) {
+                $name = new IdentifierNode($result['Identifier'][0]);
+                $className = new IdentifierNode($result['Identifier'][1]);
+                return new ObjectNode($name, $className, $result['ObjectBody']);
+            }
+
+        ObjectBody: Assignment*
+            function ObjectBody__finalise(&$result) {
+                $assignments = [];
+                foreach ($result as $item) {
+                    if (isset($item['Assignment']) && is_object($item['Assignment'])) {
+                        $assignments[] = $item['Assignment'];
+                    }
+                }
+                return $assignments;
+            }
+
+        Assignment: Identifier AssignOp Expression ";"
+            function Assignment__finalise(&$result) {
+                $target = new IdentifierNode($result['Identifier']);
+                return new AssignmentNode($target, $result['AssignOp'], $result['Expression']);
+            }
+
+        AssignOp: "+=" | "-=" | "="
+
+        # Method declaration
+        MethodDecl: "method" QualifiedName "(" ParamList? ")" ReturnType? BlockStmt
+            function MethodDecl__finalise(&$result) {
+                $params = $result['ParamList'] ?? [];
+                $returnType = $result['ReturnType'] ?? null;
+                return new MethodNode($result['QualifiedName'], $params, $returnType, $result['BlockStmt']);
+            }
+
+        ReturnType: "returns" TypeSpec
+            function ReturnType__finalise(&$result) {
+                return $result['TypeSpec'];
+            }
+
+        ParamList: Parameter ( "," Parameter )*
+            function ParamList__finalise(&$result) {
+                $params = [$result['Parameter']];
+                for ($i = 1; $i < count($result); $i += 2) {
+                    if (isset($result[$i+1])) {
+                        $params[] = $result[$i+1];
+                    }
+                }
+                return $params;
+            }
+
+        Parameter: TypeSpec Identifier
+            function Parameter__finalise(&$result) {
+                $name = new IdentifierNode($result['Identifier']);
+                return new ParameterNode($result['TypeSpec'], $name);
+            }
+
+        # Rule declaration
+        RuleDecl: "rule" Identifier "{" RuleBody "}"
+            function RuleDecl__finalise(&$result) {
+                $name = new IdentifierNode($result['Identifier']);
+                return new RuleNode($name, $result['RuleBody']);
+            }
+
+        RuleBody: IfStmt | Assignment
+
+        # Query declaration
+        QueryDecl: "query" Identifier "{" QueryBody "}"
+            function QueryDecl__finalise(&$result) {
+                $name = new IdentifierNode($result['Identifier']);
+                return new QueryNode($name, $result['QueryBody']);
+            }
+
+        QueryBody: "select" Identifier "where" Expression ";"
+            function QueryBody__finalise(&$result) {
+                $target = new IdentifierNode($result['Identifier']);
+                return new SelectNode($target, $result['Expression']);
+            }
+
+        # Statements
+        IfStmt: "if" "(" Expression ")" BlockStmt ElseClause?
+            function IfStmt__finalise(&$result) {
+                $elseBlock = $result['ElseClause'] ?? null;
+                return new IfNode($result['Expression'], $result['BlockStmt'], $elseBlock);
+            }
+
+        ElseClause: "else" BlockStmt
+            function ElseClause__finalise(&$result) {
+                return $result['BlockStmt'];
+            }
+
+        BlockStmt: "{" StmtList "}"
+            function BlockStmt__finalise(&$result) {
+                return new BlockNode($result['StmtList']);
+            }
+
+        StmtList: InnerStmt*
+            function StmtList__finalise(&$result) {
+                $statements = [];
+                foreach ($result as $item) {
+                    if (isset($item['InnerStmt']) && is_object($item['InnerStmt'])) {
+                        $statements[] = $item['InnerStmt'];
+                    }
+                }
+                return $statements;
+            }
+
+        InnerStmt: Assignment | IfStmt | ReturnStmt | ExprStmt
+
+        ReturnStmt: "return" Expression ";"
+            function ReturnStmt__finalise(&$result) {
+                return new ReturnNode($result['Expression']);
+            }
+
+        ExprStmt: Expression ";"
+            function ExprStmt__finalise(&$result) {
+                return new ExpressionStatementNode($result['Expression']);
+            }
+
+        # Expressions - left-associative, simplified
+        Expression: LogicalExpr
+
+        LogicalExpr: ComparisonExpr ( LogicalOp ComparisonExpr )*
+            function LogicalExpr__finalise(&$result) {
+                $left = $result['ComparisonExpr'];
+                for ($i = 1; $i < count($result); $i += 2) {
+                    if (isset($result[$i]) && isset($result[$i+1])) {
+                        $op = $result[$i];
+                        $right = $result[$i+1];
+                        $left = new BinaryOpNode($left, $op, $right);
+                    }
+                }
+                return $left;
+            }
+
+        LogicalOp: "&&" | "||" | "and" | "or"
+
+        ComparisonExpr: AdditiveExpr ( ComparisonOp AdditiveExpr )?
+            function ComparisonExpr__finalise(&$result) {
+                if (count($result) > 1) {
+                    return new BinaryOpNode($result['AdditiveExpr'], $result[1], $result[2]);
+                }
+                return $result['AdditiveExpr'];
+            }
+
+        ComparisonOp: "==" | "!=" | "<=" | ">=" | "<" | ">"
+
+        AdditiveExpr: MultiplicativeExpr ( AdditiveOp MultiplicativeExpr )*
+            function AdditiveExpr__finalise(&$result) {
+                $left = $result['MultiplicativeExpr'];
+                for ($i = 1; $i < count($result); $i += 2) {
+                    if (isset($result[$i]) && isset($result[$i+1])) {
+                        $op = $result[$i];
+                        $right = $result[$i+1];
+                        $left = new BinaryOpNode($left, $op, $right);
+                    }
+                }
+                return $left;
+            }
+
+        AdditiveOp: "+" | "-"
+
+        MultiplicativeExpr: UnaryExpr ( MultiplicativeOp UnaryExpr )*
+            function MultiplicativeExpr__finalise(&$result) {
+                $left = $result['UnaryExpr'];
+                for ($i = 1; $i < count($result); $i += 2) {
+                    if (isset($result[$i]) && isset($result[$i+1])) {
+                        $op = $result[$i];
+                        $right = $result[$i+1];
+                        $left = new BinaryOpNode($left, $op, $right);
+                    }
+                }
+                return $left;
+            }
+
+        MultiplicativeOp: "*" | "/" | "%"
+
+        UnaryExpr: UnaryOp? PrimaryExpr
+            function UnaryExpr__finalise(&$result) {
+                if (isset($result['UnaryOp'])) {
+                    return new UnaryOpNode($result['UnaryOp'], $result['PrimaryExpr']);
+                }
+                return $result['PrimaryExpr'];
+            }
+
+        UnaryOp: "!" | "not" | "-"
+
+        # Primary expressions - simplified ordering
+        PrimaryExpr: Literal | MethodCall | PropertyAccess | ThisKeyword | ParenExpr | SetLiteral
+
+        ParenExpr: "(" Expression ")"
+            function ParenExpr__finalise(&$result) {
+                return $result['Expression'];
+            }
+
+        ThisKeyword: "this"
+            function ThisKeyword__finalise(&$result) {
+                return new ThisNode();
+            }
+
+        MethodCall: QualifiedName "(" ArgList? ")"
+            function MethodCall__finalise(&$result) {
+                $args = $result['ArgList'] ?? [];
+                return new MethodCallNode($result['QualifiedName'], $args);
+            }
+
+        PropertyAccess: QualifiedName
+            function PropertyAccess__finalise(&$result) {
+                return new PropertyAccessNode($result['QualifiedName']);
+            }
+
+        QualifiedName: Identifier ( "." Identifier )*
+            function QualifiedName__finalise(&$result) {
+                $parts = [new IdentifierNode($result['Identifier'])];
+                for ($i = 1; $i < count($result); $i += 2) {
+                    if (isset($result[$i+1])) {
+                        $parts[] = new IdentifierNode($result[$i+1]);
+                    }
+                }
+                return new QualifiedNameNode($parts);
+            }
+
+        ArgList: Expression ( "," Expression )*
+            function ArgList__finalise(&$result) {
+                $args = [$result['Expression']];
+                for ($i = 1; $i < count($result); $i += 2) {
+                    if (isset($result[$i+1])) {
+                        $args[] = $result[$i+1];
+                    }
+                }
+                return $args;
+            }
+
+        SetLiteral: "{" ElemList? "}"
+            function SetLiteral__finalise(&$result) {
+                $elements = $result['ElemList'] ?? [];
+                return new SetLiteralNode($elements);
+            }
+
+        ElemList: Expression ( "," Expression )*
+            function ElemList__finalise(&$result) {
+                $elements = [$result['Expression']];
+                for ($i = 1; $i < count($result); $i += 2) {
+                    if (isset($result[$i+1])) {
+                        $elements[] = $result[$i+1];
+                    }
+                }
+                return $elements;
+            }
+
+        # Literals - simple order
+        Literal: String | Float | Number | Boolean | Identifier
+
+        String: /"[^"]*"/
+            function String__finalise(&$result) {
+                $value = substr($result['text'], 1, -1);
+                return new StringNode($value);
+            }
+
+        Float: /[0-9]+\.[0-9]+/
+            function Float__finalise(&$result) {
+                return new FloatNode((float)$result['text']);
+            }
+
+        Number: /[0-9]+/
+            function Number__finalise(&$result) {
+                return new IntegerNode((int)$result['text']);
+            }
+
+        Boolean: "true" | "false"
+            function Boolean__finalise(&$result) {
+                return new BooleanNode($result['text'] === 'true');
+            }
+
+        Identifier: / [a-zA-Z_][a-zA-Z0-9_]* /
+    function Identifier__finalise(&$result) {
+        return $result['text'];
+    }
+
+    # Import/Export
+ImportDecl: "import" QualifiedName ImportList? ";"
+    function ImportDecl__finalise(&$result) {
+        $imports = $result['ImportList'] ?? null;
+        return new ImportNode($result['QualifiedName'], $imports);
+    }
+
+ImportList: "." "{" IdentList "}"
+    function ImportList__finalise(&$result) {
+        return $result['IdentList'];
+    }
+
+ExportDecl: "export" IdentList ";"
+    function ExportDecl__finalise(&$result) {
+        return new ExportNode($result['IdentList']);
+    }
+
+IdentList: Identifier ( "," Identifier )*
+    function IdentList__finalise(&$result) {
+        $identifiers = [new IdentifierNode($result['Identifier'])];
+        for ($i = 1; $i < count($result); $i += 2) {
+            if (isset($result[$i+1])) {
+                $identifiers[] = new IdentifierNode($result[$i+1]);
+            }
+        }
+        return $identifiers;
+    }
+
+    # Comment definitions (PHP-specific workaround for BlockComment)
+#LineComment: /\/\/[^\n]* /**/ /
+#BlockComment: /\/\*.*?\*\/ /**/ /
+
+*/
+
+}

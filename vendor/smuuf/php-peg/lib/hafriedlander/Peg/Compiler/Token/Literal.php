@@ -5,30 +5,20 @@ namespace hafriedlander\Peg\Compiler\Token;
 use hafriedlander\Peg\Compiler\PHPBuilder;
 
 class Literal extends Expressionable {
-
-	function __construct($value) {
-		parent::__construct('literal', "'" . \substr($value, 1, -1) . "'");
+	function __construct( $value ) {
+		parent::__construct( 'literal', "'" . substr($value,1,-1) . "'" );
 	}
 
-	function matchCode($value) {
-
-		try {
-			$evald = eval('return '. $value . ';');
-		} catch (\ParseError $e) {
-			die("PEG grammar parsing error in >return $value;<': " . $e->getMessage());
-		}
-
-		// We inline single-character matches for speed.
-		if (!$this->containsExpression($value) && \strlen($evald) === 1) {
-			return $this->matchFailConditional('\substr($this->string, $this->pos, 1) === ' . $value,
+	function match_code( $value ) {
+		// We inline single-character matches for speed
+		if ( !$this->contains_expression($value) && strlen( eval( 'return '. $value . ';' ) ) == 1 ) {
+			return $this->match_fail_conditional( 'substr($this->string,$this->pos,1) == '.$value,
 				PHPBuilder::build()->l(
-					'$this->addPos(1);',
-					$this->setText($value)
+					'$this->pos += 1;',
+					$this->set_text($value)
 				)
 			);
 		}
-
-		return parent::matchCode($value);
-
+		return parent::match_code($value);
 	}
 }

@@ -9,24 +9,21 @@ namespace hafriedlander\Peg\Compiler\Rule;
  * @author Hamish Friedlander
  */
 class PendingState {
-
-	private ?string $what = \null;
-	private $val;
-
-	function set(string $what, $val = \true) {
-		$this->what = $what;
-		$this->val = $val;
+	function __construct() {
+		$this->what = NULL ;
 	}
 
-	function applyIfPresent(object $on) {
+	function set( $what, $val = TRUE ) {
+		$this->what = $what ;
+		$this->val = $val ;
+	}
 
-		if ($this->what === \null) {
-			return;
+	function apply_if_present( $on ) {
+		if ( $this->what !== NULL ) {
+			$what = $this->what ;
+			$on->$what = $this->val ;
+
+			$this->what = NULL ;
 		}
-
-		$what = $this->what;
-		$on->$what = $this->val;
-		$this->what = \null;
-
 	}
 }
