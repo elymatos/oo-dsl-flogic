@@ -4,66 +4,85 @@ namespace hafriedlander\Peg;
 
 class Compiler {
 
-	/** @var Compiler\RuleSet[] */
-	private static array $parsers = [];
+	static $parsers = array();
 
-	public static bool $debug = \false;
+	static $debug = false;
 
-	private static function createParser(array $match) {
-		$name = $match['name'] ?? 'Anonymous Parser';
+	static $currentClass = null;
 
-		// Handle pragmas.
-		if ($match['pragmas'] ?? \false) {
-			foreach (\explode('!', $match['pragmas']) as $pragma) {
+	static function create_parser( $match ) {
+		/* We allow indenting of the whole rule block, but only to the level of the comment start's indent */
+		$indent = $match[1];
 
-				$pragma = \trim($pragma);
-				if ($pragma === '') {
-					continue;
-				}
+		/* Get the parser name for this block */
+		if     ($class = trim($match[2])) self::$currentClass = $class;
+		elseif (self::$currentClass)      $class = self::$currentClass;
+		else                              $class = self::$currentClass = 'Anonymous Parser';
 
-				switch ($pragma) {
-					case 'debug':
-						self::$debug = \true;
-						break;
-					default:
-						throw new \RuntimeException("Unknown pragma '$pragma' encountered");
-				}
-
+		/* Check for pragmas */
+		if (strpos($class, '!') === 0) {
+			switch ($class) {
+				case '!silent':
+					// NOP - dont output
+					return '';
+				case '!insert_autogen_warning':
+					return $indent . implode(PHP_EOL.$indent, array(
+						'/*',
+						'WARNING: This file has been machine generated. Do not edit it, or your changes will be overwritten next time it is compiled.',
+						'*/'
+					)) . PHP_EOL;
+				case '!debug':
+					self::$debug = true;
+					return '';
 			}
+
+			throw new \Exception("Unknown pragma $class encountered when compiling parser");
 		}
 
-		self::$parsers[$name] ??= new Compiler\RuleSet;
+		if (!isset(self::$parsers[$class])) self::$parsers[$class] = new Compiler\RuleSet();
 
-		// We allow indenting of the whole rule block, but only to the level
-		// of the comment start's indent */
-		$indent = $match['indent'];
-
-		return self::$parsers[$name]->compile($indent, $match['grammar']);
-
+		return self::$parsers[$class]->compile($indent, $match[3]);
 	}
 
-	public static function compile(string $string): string {
-
+	static function compile( $string ) {
 		static $rx = '@
-			# Optional indent and marker of grammar definition start.
-			^(?<indent>\h*)/\*!\*
+			^([\x20\t]*)/\*!\* (?:[\x20\t]*(!?\w*))?   # Start with some indent, a comment with the special marker, then an optional name
+			((?:[^*]|\*[^/])*?)                        # Any amount of "a character that isnt a star, or a star not followed by a /
+			\*/                                        # The comment end
+		@mx';
 
-			# Optional pragmas and optional name.
-			\h*(?<pragmas>(!\w+)+\h+)?(?<name>(\w)+)?\h*\r?\n
+//        $x = preg_match($rx, $string, $match);
+////        print_r($match);
+//        if (preg_last_error()) {
+//            echo 'Backtrack limit was exhausted!';
+//        }
 
-			# Any character
-			(?<grammar>.+)(?=\*/)
-
-			# Grammar definition end.
-			\*/
-		@smx';
-
-		return preg_replace_callback(
-			$rx,
-			[self::class, 'createParser'],
-			$string
-		);
-
+		$z = preg_replace_callback( $rx, array( __CLASS__, 'create_parser' ), $string ) ;
+//        if (preg_last_error()) {
+//            print_r('+++ '. preg_last_error());
+//        }
+        return $z;
 	}
 
+	static function cli( $args ) {
+		if ( count( $args ) == 1 ) {
+			print "Parser Compiler: A compiler for PEG parsers in PHP \n" ;
+			print "(C) 2009 SilverStripe. See COPYING for redistribution rights. \n" ;
+			print "\n" ;
+			print "Usage: {$args[0]} infile [ outfile ]\n" ;
+			print "\n" ;
+		}
+		else {
+			$fname = ( $args[1] == '-' ? 'php://stdin' : $args[1] ) ;
+			$string = file_get_contents( $fname ) ;
+			$string = self::compile( $string ) ;
+
+			if ( !empty( $args[2] ) && $args[2] != '-' ) {
+				file_put_contents( $args[2], $string ) ;
+			}
+			else {
+				print $string ;
+			}
+		}
+	}
 }

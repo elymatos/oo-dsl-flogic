@@ -11,59 +11,30 @@ namespace hafriedlander\Peg\Parser;
  *  the bracket if a failed match + restore has moved the current position backwards - so we have to check that too.
  */
 class CachedRegexp {
+	function __construct( $parser, $rx ) {
+		$this->parser = $parser ;
+		$this->rx = $rx . 'Sx' ;
 
-	// S: Extra analysis is performed.
-	// x: Ignore extra whitespace.
-	const DEFAULT_MODIFIERS = 'Sx';
-
-	private string $rx;
-	private Basic $parser;
-	private array $matches = [];
-	private ?int $matchPos;
-	private ?int $checkPos;
-
-	public function __construct(Basic $parser, string $rx) {
-
-		// Modifiers can be specified multiple times, so no need to check for
-		// uniqueness.
-		$this->rx = $rx . self::DEFAULT_MODIFIERS;
-		$this->parser = $parser;
-
-		$this->matchPos = \null; // \null is no-match-to-end-of-string, unless checkPos also == \null, in which case means undefined.
-		$this->checkPos = \null;
-
+		$this->matches = NULL ;
+		$this->match_pos = NULL ; // NULL is no-match-to-end-of-string, unless check_pos also == NULL, in which case means undefined
+		$this->check_pos = NULL ;
 	}
 
-	public function match() {
+	function match() {
+		$current_pos = $this->parser->pos ;
+		$dirty = $this->check_pos === NULL || $this->check_pos > $current_pos || ( $this->match_pos !== NULL && $this->match_pos < $current_pos ) ;
 
-		$currentPos = $this->parser->getPos();
-		$dirty = $this->checkPos === \null
-			|| $this->checkPos > $currentPos
-			|| ($this->matchPos !== \null && $this->matchPos < $currentPos);
-
-		if ($dirty) {
-
-			$this->checkPos = $currentPos;
-			$matched = \preg_match(
-				$this->rx,
-				$this->parser->getString(),
-				$this->matches,
-				\PREG_OFFSET_CAPTURE,
-				$this->checkPos
-			);
-
-			$this->matchPos = $matched
-				? $this->matches[0][1]
-				: \null;
-
+		if ( $dirty ) {
+			$this->check_pos = $current_pos ;
+			$matched = preg_match( $this->rx, $this->parser->string, $this->matches, PREG_OFFSET_CAPTURE, $this->check_pos) ;
+			if ( $matched ) $this->match_pos = $this->matches[0][1] ; else $this->match_pos = NULL ;
 		}
 
-		if ($this->matchPos !== $currentPos) {
-			return \false;
+		if ( $this->match_pos === $current_pos ) {
+			$this->parser->pos += strlen( $this->matches[0][0] );
+			return $this->matches[0][0] ;
 		}
 
-		$this->parser->addPos(\strlen($this->matches[0][0]));
-		return $this->matches[0][0];
-
+		return FALSE ;
 	}
 }

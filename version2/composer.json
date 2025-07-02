@@ -1,0 +1,33 @@
+{
+  "name": "your-org/flogic-dsl-parser",
+  "description": "F-Logic ErgoAI DSL Parser using PEG",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.0",
+    "smuuf/php-peg": "^2.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0|^10.0|^11.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "FLogicDSL\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "FLogicDSL\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "generate-parser": "php bin/generate-parser.php",
+    "test-parser": "php bin/test-parser.php",
+    "test": "phpunit"
+  },
+  "config": {
+    "allow-plugins": {
+      "*": true
+    }
+  }
+}

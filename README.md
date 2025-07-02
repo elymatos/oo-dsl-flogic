@@ -1,328 +1,478 @@
-# F-Logic ErgoAI DSL Parser
+# OO-DSL for F-Logic ErgoAI
 
-A PHP-based parser and translator for converting Object-Oriented Domain Specific Language (OODSL) to F-Logic ErgoAI syntax using **smuuf/php-peg** - the modern, PHP 8.4 compatible PEG parser.
+A Domain Specific Language (DSL) that provides an Object-Oriented syntax for F-Logic ErgoAI, making logic programming more accessible to developers familiar with OOP paradigms.
+
+## Overview
+
+This project bridges the gap between Object-Oriented Programming and F-Logic by providing a familiar syntax that compiles to F-Logic ErgoAI code. The DSL makes ErgoAI knowledge base development more intuitive while retaining all the power of F-Logic reasoning.
 
 ## Features
 
-- **Class declarations** with inheritance
-- **Object instantiation** with property assignments
-- **Method signatures** and implementations
-- **Rule definitions** with complex conditions
-- **Collection types** (set, list) with cardinality constraints
-- **Chained property access** (Person.spouse.age)
-- **Boolean expressions** with AND/OR logic
-- **Method calls** with parameters
-- **PHP 8.4 compatible** using smuuf/php-peg
+- **OOP-like Syntax**: Familiar class, object, and method syntax
+- **Inheritance Support**: Both structural and full inheritance
+- **Type System**: Strong typing with primitive and user-defined types
+- **Collections**: Built-in support for sets, lists, and bags with constraints
+- **Method Definitions**: Object-oriented method implementations that compile to F-Logic rules
+- **Business Rules**: Intuitive rule syntax for complex logic
+- **Module System**: Organized code with imports and exports
+- **Semantic Analysis**: Comprehensive validation and error reporting
+- **CLI Tool**: Command-line interface for compilation
 
 ## Installation
 
-1. **Clone the repository:**
+### Prerequisites
+
+- PHP 8.0 or higher
+- Composer
+- ErgoAI reasoner (for running generated F-Logic code)
+
+### Setup
+
+1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd flogic-dsl-parser
+git clone https://github.com/your-org/oo-dsl-flogic.git
+cd oo-dsl-flogic
 ```
 
-2. **Install dependencies:**
+2. Install dependencies:
 ```bash
 composer install
 ```
 
-3. **Generate the parser:**
+3. Make the CLI tool executable:
 ```bash
-composer run generate-parser
+chmod +x bin/oodsl-compile
 ```
 
-4. **Test the parser:**
+4. Optionally, add to your PATH:
 ```bash
-composer run test-parser
+sudo ln -s $(pwd)/bin/oodsl-compile /usr/local/bin/oodsl-compile
 ```
 
-## Usage
+## Quick Start
 
-### Basic Example
+### 1. Create a DSL File
 
-```php
-<?php
-require_once 'vendor/autoload.php';
+Create a file `example.oodsl`:
 
-use FLogicDSL\Parser\OODSLParser;
-use FLogicDSL\Translator\FLogicTranslator;
-
-$dslCode = '
+```javascript
 class Person {
     string name;
     integer age;
-}
-
-object John : Person {
-    name = "John Doe";
-    age = 30;
-}
-
-rule Adult {
-    if (Person.age >= 18) {
-        Person.isAdult = true;
-    }
-}
-';
-
-// Parse the DSL using smuuf/php-peg
-$parser = new OODSLParser();
-$ast = $parser->parse($dslCode);
-
-if ($ast) {
-    echo "Parsing successful!\n";
-    print_r($ast);
-    
-    // Translate to F-Logic (when AST integration is complete)
-    // $translator = new FLogicTranslator();
-    // $flogicCode = $translator->translate($ast);
-    // echo $flogicCode;
-} else {
-    echo "Parsing failed!";
-}
-```
-
-### Command Line Testing
-
-```bash
-# Test the parser with built-in examples
-composer run test-parser
-
-# Generate parser from grammar
-composer run generate-parser
-
-# Run unit tests
-composer run test
-```
-
-## Technical Details
-
-### PEG Library: smuuf/php-peg
-
-This project uses **smuuf/php-peg** which is:
-- ✅ **PHP 8.4 compatible** - No deprecation warnings
-- ✅ **Actively maintained** - Updated fork of hafriedlander/php-peg
-- ✅ **Modern PHP features** - Uses current PHP syntax and features
-- ✅ **Better error handling** - Improved debugging and error reporting
-
-### Grammar Definition
-
-The grammar is defined using smuuf/php-peg's array-based syntax in `src/Grammar/OODSLGrammar.peg`:
-
-```php
-protected const GRAMMAR = [
-    'Program' => [
-        'rule' => '(Statement)*',
-        'handler' => 'handleProgram'
-    ],
-    'ClassDeclaration' => [
-        'rule' => '"class" _ name:Identifier inheritance:InheritanceClause? __ "{" __ body:ClassBody __ "}"',
-        'handler' => 'handleClassDeclaration'
-    ],
-    // ... more rules
-];
-```
-
-### Parser Generation
-
-The parser generation process:
-
-1. **Primary Method**: Uses smuuf/php-peg to generate from grammar
-2. **Fallback Method**: Creates manual recursive descent parser if PEG fails
-3. **Automatic Detection**: Detects available libraries and chooses the best method
-
-## DSL Syntax Examples
-
-### Class Declaration
-```
-class Person {
-    string name;
-    integer age;
-    boolean isActive;
-}
-```
-
-### Inheritance
-```
-class Employee inherits from Person {
-    string department;
-    float salary;
-}
-```
-
-### Object Declaration
-```
-object John : Person {
-    name = "John Doe";
-    age = 30;
-    isActive = true;
-}
-```
-
-### Collection Properties
-```
-class Family {
-    set<Person> children;
-    string surname;
-}
-
-object SmithFamily : Family {
-    surname = "Smith";
-    children += {alice, bob, charlie};
-}
-```
-
-### Rules with Conditions
-```
-rule Adult {
-    if (Person.age >= 18) {
-        Person.isAdult = true;
-    }
-}
-
-rule PowerCouple {
-    if (Person.salary > 70000.0 && Person.spouse.salary > 60000.0) {
-        Person.isPowerCouple = true;
-    }
-}
-```
-
-### Method Declarations
-```
-class Person {
     boolean isAdult();
-    string getFullName();
+}
+
+object John : Person {
+    name = "John Doe";
+    age = 30;
 }
 
 method Person.isAdult() returns boolean {
     return this.age >= 18;
 }
+
+rule AdultPerson {
+    if (Person.isAdult()) {
+        Person.canVote = true;
+    }
+}
+
+query FindAdults {
+    select Person where Person.isAdult() == true;
+}
 ```
 
-### Chained Property Access
+### 2. Compile to F-Logic
+
+```bash
+oodsl-compile example.oodsl --output example.flr
 ```
-rule SpouseAge {
-    if (Person.spouse.age > 30) {
-        Person.hasOlderSpouse = true;
+
+### 3. Generated F-Logic Output
+
+```prolog
+% Generated F-Logic code from OO-DSL
+% Generated at: 2025-07-02 10:30:00
+
+% Class definition: Person
+Person::Object.
+Person[|name => \string, 
+       age => \integer, 
+       isAdult() => \boolean|].
+
+% Object: John
+John:Person.
+John[name -> "John Doe"].
+John[age -> 30].
+
+% Method implementation: Person.isAdult
+?P:Person[isAdult() -> ?Result] :-
+    ?P[age -> ?A],
+    ?A >= 18,
+    ?Result \is \true.
+
+% Rule: AdultPerson
+@!{AdultPerson}
+?P:Person[canVote] :-
+    ?P:Person[isAdult() -> \true].
+
+% Query: FindAdults
+?- ?P:Person[isAdult() -> \true].
+```
+
+## Language Reference
+
+### Class Definitions
+
+```javascript
+class ClassName inherits from ParentClass {
+    // Field declarations
+    string fieldName;
+    integer count{1..10};  // With constraints
+    set<Person> children;  // Collections
+    
+    // Method signatures
+    boolean methodName(string param);
+}
+```
+
+### Inheritance Types
+
+```javascript
+// Full inheritance (structure + behavior)
+class Student inherits from Person {
+    string studentId;
+}
+
+// Structural inheritance only
+class Employee inherits structure from Person {
+    string employeeId;
+}
+```
+
+### Object Instances
+
+```javascript
+object instanceName : ClassName {
+    fieldName = "value";
+    numericField = 42;
+    booleanField = true;
+    setField += {item1, item2};  // Add to set
+}
+```
+
+### Method Implementations
+
+```javascript
+method ClassName.methodName(paramType paramName) returns returnType {
+    // Method body
+    return expression;
+}
+```
+
+### Business Rules
+
+```javascript
+rule RuleName {
+    if (condition && anotherCondition) {
+        consequence;
     }
 }
 ```
 
-## F-Logic ErgoAI Output
+### Queries
 
-The DSL translates to F-Logic ErgoAI syntax:
-
-| OODSL Construct | F-Logic ErgoAI Output |
-|-----------------|----------------------|
-| `class Person { string name; }` | `Person[name => string].` |
-| `object John : Person { name = "John"; }` | `John:Person[name -> "John"].` |
-| `class Dog inherits from Animal` | `Dog::Animal.` |
-| `set<Person> children` | `children *=> Person` |
-| `Person.spouse.age > 30` | `?Person[spouse -> ?Spouse], ?Spouse[age -> ?Age], ?Age > 30` |
-| `rule Adult { if (Person.age >= 18) { Person.isAdult = true; } }` | `@!{Adult} ?Person[isAdult -> true] :- ?Person:Person, ?Person[age -> ?Age], ?Age >= 18.` |
-
-## Project Structure
-
-```
-flogic-dsl-parser/
-├── composer.json                  # smuuf/php-peg dependency
-├── README.md
-├── bin/
-│   ├── generate-parser.php        # Parser generator (smuuf/php-peg)
-│   └── test-parser.php           # Test script
-├── src/
-│   ├── Grammar/
-│   │   └── OODSLGrammar.peg      # PEG grammar (smuuf format)
-│   ├── Parser/
-│   │   ├── OODSLParser.php       # Generated/manual parser
-│   │   └── ASTNode.php           # AST node classes
-│   └── Translator/
-│       ├── FLogicTranslator.php   # F-Logic translator
-│       └── TranslationContext.php # Translation context
-├── tests/
-│   ├── ParserTest.php            # Parser tests
-│   └── TranslatorTest.php        # Translator tests
-└── examples/
-    └── simple_test.oodsl         # Example DSL files
+```javascript
+query QueryName {
+    select ClassName where condition;
+}
 ```
 
-## PHP 8.4 Compatibility
+### Module System
 
-✅ **Fully compatible with PHP 8.4**
-- No deprecation warnings
-- Uses modern smuuf/php-peg library
-- Clean error handling
-- Updated composer dependencies
+```javascript
+module ModuleName {
+    // Module contents
+    export Class1, Class2;
+}
 
-## Troubleshooting
+import ModuleName.{Class1, Class2};
+```
 
-### Parser Generation Issues
+## CLI Usage
 
-The system automatically handles different scenarios:
-
-1. **smuuf/php-peg available**: Uses modern PEG generation
-2. **PEG generation fails**: Falls back to manual parser
-3. **Both fail**: Provides clear error messages
-
-### Testing Individual Components
+### Basic Compilation
 
 ```bash
-# Test parser only
-composer run test-parser
+# Compile single file
+oodsl-compile input.oodsl --output output.flr
 
-# Test with verbose output
-php bin/test-parser.php
+# Compile directory
+oodsl-compile src/ --output-dir build/
 
-# Check parser file
-ls -la src/Parser/OODSLParser.php
+# Validate syntax only
+oodsl-compile input.oodsl --validate-only
 ```
 
-### Common Issues
+### Advanced Options
 
-1. **Composer install fails**: Ensure PHP >= 8.0
-2. **Parser generation fails**: Check permissions on src/Parser/ directory
-3. **Tests fail**: Run `composer run test-parser` for diagnostics
+```bash
+# Verbose output
+oodsl-compile input.oodsl --verbose
+
+# Show AST
+oodsl-compile input.oodsl --ast
+
+# Different output formats
+oodsl-compile input.oodsl --format json --ast
+oodsl-compile input.oodsl --format dot --ast  # GraphViz format
+```
+
+### CLI Options
+
+| Option | Description |
+|--------|-------------|
+| `--output, -o` | Output file for F-Logic code |
+| `--output-dir, -d` | Output directory for multiple files |
+| `--module-name, -m` | Module name for generated code |
+| `--validate-only` | Only validate syntax without generating code |
+| `--verbose, -v` | Verbose output |
+| `--ast` | Output AST instead of F-Logic code |
+| `--format, -f` | Output format (flogic, json, dot) |
+
+## Examples
+
+### Complete Person Domain Example
+
+See `examples/person_domain.oodsl` for a comprehensive example demonstrating:
+
+- Class inheritance
+- Object relationships
+- Method implementations
+- Business rules
+- Complex queries
+- Module organization
+
+### Family Relationships
+
+```javascript
+class Person {
+    string name;
+    Person spouse;
+    set<Person> children;
+    set<Person> parents;
+}
+
+rule MarriedCouple {
+    if (Person.spouse != null) {
+        Person.isMarried = true;
+        Person.spouse.isMarried = true;
+    }
+}
+
+rule ParentChild {
+    if (Person.children.count() > 0) {
+        Person.isParent = true;
+    }
+}
+
+query FindGrandparents {
+    select Person where Person.children.children.count() > 0;
+}
+```
+
+### Business Rules Example
+
+```javascript
+class Customer {
+    string name;
+    float creditScore;
+    integer age;
+    boolean hasLoan;
+}
+
+rule LoanEligibility {
+    if (Customer.creditScore > 700 && Customer.age >= 18) {
+        Customer.isEligibleForLoan = true;
+    }
+}
+
+rule HighValueCustomer {
+    if (Customer.creditScore > 800 && Customer.hasLoan) {
+        Customer.isPremiumCustomer = true;
+    }
+}
+```
+
+## F-Logic Mapping
+
+### Key Translation Patterns
+
+| DSL Construct | F-Logic Output |
+|---------------|----------------|
+| `class Person` | `Person::Object.` |
+| `string name;` | `name => \string` |
+| `Person spouse;` | `spouse => Person` |
+| `set<Person> children;` | `children{0..*} => Person` |
+| `object John : Person` | `John:Person.` |
+| `name = "John";` | `John[name -> "John"].` |
+| `isVegetarian = true;` | `John[isVegetarian].` |
+| Method call | Frame access with variables |
+| Business rules | Named rules with `@!{RuleName}` |
 
 ## Development
 
-### Adding New Grammar Rules
+### Project Structure
 
-1. Edit `src/Grammar/OODSLGrammar.peg` using smuuf/php-peg syntax
-2. Add rule to `GRAMMAR` array with proper handler
-3. Implement handler method in parser class
-4. Regenerate: `composer run generate-parser`
-5. Test: `composer run test-parser`
-
-### smuuf/php-peg Grammar Syntax
-
-```php
-'RuleName' => [
-    'rule' => 'grammar_expression',
-    'handler' => 'handleRuleName'  // optional
-],
+```
+oo-dsl-flogic/
+├── src/
+│   ├── Parser/           # Grammar and parsing
+│   ├── AST/             # Abstract Syntax Tree nodes
+│   ├── CodeGen/         # F-Logic code generation
+│   ├── Analysis/        # Semantic analysis
+│   ├── Utils/           # Utility classes
+│   └── CLI/             # Command-line interface
+├── tests/               # Unit and integration tests
+├── examples/            # Example DSL files
+├── bin/                 # Executable scripts
+└── docs/               # Documentation
 ```
 
-### Adding New Translation Patterns
+### Grammar Development
 
-1. Update AST nodes if needed
-2. Add visitor methods to `FLogicTranslator`
-3. Update translation context
-4. Add test cases
+The grammar is defined in `src/Parser/Grammar.peg` using the php-peg syntax. To modify the language:
 
-## License
+1. Edit the grammar file
+2. Run `composer compile-grammar` to regenerate the parser
+3. Update the AST nodes if needed
+4. Update the code generator for new constructs
 
-MIT License - see LICENSE file for details.
+### Running Tests
+
+```bash
+# Run all tests
+composer test
+
+# Run with coverage
+phpunit --coverage-html coverage/
+
+# Check coding standards
+composer cs-check
+
+# Fix coding standards
+composer cs-fix
+```
+
+## Integration with ErgoAI
+
+### Using Generated F-Logic
+
+1. Compile your DSL file:
+```bash
+oodsl-compile domain.oodsl --output domain.flr
+```
+
+2. Load in ErgoAI:
+```prolog
+?- [domain].
+```
+
+3. Query the knowledge base:
+```prolog
+?- ?X:Person[isAdult() -> \true].
+```
+
+### ErgoAI Studio Integration
+
+The generated F-Logic files are compatible with ErgoAI Studio for:
+- Interactive development
+- Debugging
+- Query testing
+- Knowledge base exploration
+
+## Advanced Features
+
+### Type Constraints
+
+```javascript
+class Family {
+    set<Person>{2..10} members;     // 2 to 10 members
+    Person{1..2} parents;           // 1 or 2 parents
+    list<Person> children;          // Ordered children
+}
+```
+
+### Complex Expressions
+
+```javascript
+method Person.calculateBMI(float weight, float height) returns float {
+    return weight / (height * height);
+}
+
+rule HealthyPerson {
+    if (Person.calculateBMI(Person.weight, Person.height) >= 18.5 && 
+        Person.calculateBMI(Person.weight, Person.height) <= 24.9) {
+        Person.isHealthy = true;
+    }
+}
+```
+
+### Aggregations
+
+```javascript
+rule LargeFamily {
+    if (Person.children.count() > 3) {
+        Person.hasLargeFamily = true;
+    }
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Parse Errors**: Check syntax against the grammar reference
+2. **Semantic Errors**: Ensure all referenced classes and fields are defined
+3. **Type Errors**: Verify type compatibility in assignments and method calls
+
+### Debug Mode
+
+Use verbose mode for detailed error information:
+
+```bash
+oodsl-compile problematic.oodsl --verbose
+```
+
+### Error Messages
+
+The compiler provides detailed error messages with:
+- File location (line and column)
+- Context around the error
+- Suggested fixes when possible
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Ensure PHP 8.4 compatibility
+3. Make your changes
 4. Add tests for new functionality
-5. Submit a pull request
+5. Ensure all tests pass
+6. Submit a pull request
 
-## Links
+## License
 
-- [smuuf/php-peg](https://github.com/smuuf/php-peg) - Modern PEG parser for PHP
-- [F-Logic ErgoAI](http://coherentknowledge.com/ergoAI/) - F-Logic reasoning system
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- ErgoAI team for the excellent F-Logic reasoner
+- php-peg library for grammar parsing capabilities
+- The F-Logic research community
+
+## Support
+
+- **Documentation**: See the `docs/` directory
+- **Examples**: Check the `examples/` directory
+- **Issues**: Report bugs on GitHub
+- **Discussions**: Use GitHub Discussions for questions

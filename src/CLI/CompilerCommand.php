@@ -1,335 +1,440 @@
 <?php
 
-namespace FLogicDSL\CLI;
+namespace OODSLFLogic\CLI;
 
-use FLogicDSL\Parser\OODSLParser;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Filesystem\Filesystem;
+use OODSLFLogic\Parser\Parser;
+use OODSLFLogic\CodeGen\FLogicGenerator;
+use OODSLFLogic\Analysis\SemanticAnalyzer;
 
-use Exception;
-
-class CompilerCommand
+class CompilerCommand extends Command
 {
-    private $options = [
-        'output' => null,
-        'debug' => false,
-        'help' => false,
-    ];
+    protected static $defaultName = 'compile';
+    protected static $defaultDescription = 'Compile OO-DSL files to F-Logic ErgoAI';
 
-    public function run(array $argv): int
+    private Parser $parser;
+    private FLogicGenerator $generator;
+    private SemanticAnalyzer $analyzer;
+    private Filesystem $filesystem;
+
+    public function __construct()
     {
+        parent::__construct();
+
+        $this->parser = new Parser();
+        $this->generator = new FLogicGenerator();
+        $this->analyzer = new SemanticAnalyzer();
+        $this->filesystem = new Filesystem();
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->setDescription(self::$defaultDescription)
+            ->addArgument(
+                'input',
+                InputArgument::REQUIRED,
+                'Input DSL file or directory'
+            )
+            ->addOption(
+                'output',
+                'o',
+                InputOption::VALUE_REQUIRED,
+                'Output file for F-Logic code'
+            )
+            ->addOption(
+                'output-dir',
+                'd',
+                InputOption::VALUE_REQUIRED,
+                'Output directory for F-Logic modules'
+            )
+            ->addOption(
+                'module-name',
+                'm',
+                InputOption::VALUE_REQUIRED,
+                'Module name for generated code'
+            )
+            ->addOption(
+                'validate-only',
+                null,
+                InputOption::VALUE_NONE,
+                'Only validate syntax without generating code'
+            )
+//            ->addOption(
+//                'verbose',
+//                'v',
+//                InputOption::VALUE_NONE,
+//                'Verbose output'
+//            )
+            ->addOption(
+                'ast',
+                null,
+                InputOption::VALUE_NONE,
+                'Output AST instead of F-Logic code'
+            )
+            ->addOption(
+                'format',
+                'f',
+                InputOption::VALUE_REQUIRED,
+                'Output format (flogic, json, dot)',
+                'flogic'
+            );
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $io = new SymfonyStyle($input, $output);
+
+        $inputPath = $input->getArgument('input');
+        $outputFile = $input->getOption('output');
+        $outputDir = $input->getOption('output-dir');
+        $moduleName = $input->getOption('module-name');
+        $validateOnly = $input->getOption('validate-only');
+        $verbose = $input->getOption('verbose');
+        $showAst = $input->getOption('ast');
+        $format = $input->getOption('format');
+
+        // Set verbose mode
+        $this->parser->getErrorHandler()->setVerbose($verbose);
+
         try {
-            $this->parseArguments($argv);
+            // Determine input files
+            $inputFiles = $this->getInputFiles($inputPath);
 
-            if ($this->options['help']) {
-                $this->showHelp();
-                return 0;
+            if (empty($inputFiles)) {
+                $io->error("No DSL files found in: {$inputPath}");
+                return Command::FAILURE;
             }
 
-            $inputFile = $this->getInputFile($argv);
-            $outputFile = $this->getOutputFile($inputFile);
+            $io->title('OO-DSL to F-Logic Compiler');
 
-            return $this->compile($inputFile, $outputFile);
-
-        } catch (Exception $e) {
-            fwrite(STDERR, "Error: " . $e->getMessage() . "\n");
-            return 1;
-        }
-    }
-
-    private function parseArguments(array $argv): void
-    {
-        for ($i = 1; $i < count($argv); $i++) {
-            $arg = $argv[$i];
-
-            switch ($arg) {
-                case '-h':
-                case '--help':
-                    $this->options['help'] = true;
-                    break;
-
-                case '-o':
-                case '--output':
-                    if (!isset($argv[$i + 1])) {
-                        throw new Exception("Option {$arg} requires a value");
-                    }
-                    $this->options['output'] = $argv[++$i];
-                    break;
-
-                case '--debug':
-                    $this->options['debug'] = true;
-                    break;
-
-                default:
-                    if (str_starts_with($arg, '-')) {
-                        throw new Exception("Unknown option: {$arg}");
-                    }
-                    // This is the input file, handled in getInputFile()
-                    break;
+            if ($verbose) {
+                $io->section('Input Files');
+                $io->listing($inputFiles);
             }
-        }
-    }
 
-    private function getInputFile(array $argv): string
-    {
-        // Find the input file (non-option argument)
-        for ($i = 1; $i < count($argv); $i++) {
-            $arg = $argv[$i];
+            $allSuccessful = true;
+            $results = [];
 
-            // Skip options and their values
-            if (str_starts_with($arg, '-')) {
-                if (in_array($arg, ['-o', '--output'])) {
-                    $i++; // Skip the option value
+            foreach ($inputFiles as $file) {
+                $io->section("Processing: " . basename($file));
+
+                $result = $this->processFile($file, $io, $validateOnly, $showAst, $format);
+                $results[$file] = $result;
+
+                if (!$result['success']) {
+                    $allSuccessful = false;
                 }
-                continue;
             }
 
-            return $arg;
-        }
+            // Generate output
+            if ($allSuccessful && !$validateOnly) {
+                $this->generateOutput($results, $outputFile, $outputDir, $moduleName, $io, $format);
+            }
 
-        // No file provided, read from stdin
-        return 'php://stdin';
+            // Summary
+            $this->printSummary($results, $io);
+
+            return $allSuccessful ? Command::SUCCESS : Command::FAILURE;
+
+        } catch (\Exception $e) {
+            $io->error("Compilation failed: " . $e->getMessage());
+
+            if ($verbose) {
+                $io->block($e->getTraceAsString(), 'TRACE', 'fg=gray');
+            }
+
+            return Command::FAILURE;
+        }
     }
 
-    private function getOutputFile(string $inputFile): string
+    private function getInputFiles(string $inputPath): array
     {
-        // If output explicitly specified, use it
-        if ($this->options['output']) {
-            return $this->options['output'];
+        $files = [];
+
+        if (is_file($inputPath)) {
+            if (pathinfo($inputPath, PATHINFO_EXTENSION) === 'oodsl') {
+                $files[] = $inputPath;
+            }
+        } elseif (is_dir($inputPath)) {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($inputPath)
+            );
+
+            foreach ($iterator as $file) {
+                if ($file->isFile() && $file->getExtension() === 'oodsl') {
+                    $files[] = $file->getPathname();
+                }
+            }
         }
 
-        // If reading from stdin, output to stdout
-        if ($inputFile === 'php://stdin') {
-            return 'php://stdout';
-        }
-
-        // Generate .flr file from input file
-        $pathInfo = pathinfo($inputFile);
-        $baseName = $pathInfo['filename']; // filename without extension
-        $directory = $pathInfo['dirname'];
-
-        return $directory . DIRECTORY_SEPARATOR . $baseName . '.flr';
+        return $files;
     }
 
-    private function compile(string $inputFile, string $outputFile): int
-    {
+    private function processFile(
+        string $file,
+        SymfonyStyle $io,
+        bool $validateOnly,
+        bool $showAst,
+        string $format
+    ): array {
+        $result = [
+            'success' => false,
+            'ast' => null,
+            'flogic' => null,
+            'errors' => []
+        ];
+
         try {
-            // Read input
-            if ($inputFile === 'php://stdin') {
-                $input = stream_get_contents(STDIN);
-            } else {
-                if (!file_exists($inputFile)) {
-                    throw new Exception("Input file not found: {$inputFile}");
-                }
-                $input = file_get_contents($inputFile);
+            // Parse the file
+            $ast = $this->parser->parseFile($file);
+
+            $result['ast'] = $ast;
+
+            $io->success("Parsed successfully");
+
+            if ($showAst) {
+                $this->displayAst($ast, $io, $format);
             }
 
-            if ($input === false || empty(trim($input))) {
-                throw new Exception("No input provided or file is empty");
+            if (!$validateOnly) {
+                // Semantic analysis
+//                $analysisResult = $this->analyzer->analyze($ast);
+//
+//                if ($analysisResult->hasErrors()) {
+//                    $result['errors'] = $analysisResult->getErrors();
+//                    $io->error("Semantic analysis failed");
+//
+//                    foreach ($analysisResult->getErrors() as $error) {
+//                        $io->text("  - {$error}");
+//                    }
+//
+//                    return $result;
+//                }
+//
+//                $io->success("Semantic analysis passed");
+
+                // Generate F-Logic code
+                $flogicCode = $this->generator->generate($ast);
+                $result['flogic'] = $flogicCode;
+
+                $io->success("F-Logic code generated");
             }
 
-            // Parse with PEG parser
-            if ($this->options['debug']) {
-                fwrite(STDERR, "Parsing input with OODSLParser...\n");
-            }
+            $result['success'] = true;
 
-            $parser = new OODSLParser($input);
-            $parser->currentFilename = $inputFile !== 'php://stdin' ? $inputFile : null;
+        } catch (\Exception $e) {
+            $result['errors'][] = $e->getMessage();
+            $io->error("Failed to process file: " . $e->getMessage());
+        }
 
-            $ast = $parser->match_Program();
+        return $result;
+    }
 
-            if ($ast === false) {
-                throw new Exception("Failed to parse input. Check DSL syntax.");
-            }
+    private function displayAst($ast, SymfonyStyle $io, string $format): void
+    {
+        $io->section('Abstract Syntax Tree');
 
-            if ($this->options['debug']) {
-                fwrite(STDERR, "Parse successful. AST type: " . (is_object($ast) ? get_class($ast) : gettype($ast)) . "\n");
-            }
-
-            // Handle the parser result properly
-            $programNode = $this->createProgramNodeFromResult($ast);
-
-            if ($this->options['debug']) {
-                fwrite(STDERR, "Created ProgramNode with " . count($programNode->getStatements()) . " statements\n");
-            }
-
-            // Create basic F-Logic generator if FLogicGenerator doesn't exist or has issues
-            if (!class_exists('OODSLToFLogic\CodeGen\FLogicGenerator')) {
-                $flogicCode = $this->generateBasicFLogic($programNode);
-            } else {
-                try {
-                    $generator = new FLogicGenerator();
-                    $flogicCode = $generator->generate($programNode);
-                } catch (Exception $e) {
-                    if ($this->options['debug']) {
-                        fwrite(STDERR, "FLogicGenerator failed, using basic generator: " . $e->getMessage() . "\n");
-                    }
-                    $flogicCode = $this->generateBasicFLogic($programNode);
-                }
-            }
-
-            // Write output
-            if ($outputFile === 'php://stdout') {
-                echo $flogicCode;
-            } else {
-                // Ensure output directory exists
-                $outputDir = dirname($outputFile);
-                if (!is_dir($outputDir)) {
-                    if (!mkdir($outputDir, 0755, true)) {
-                        throw new Exception("Could not create output directory: {$outputDir}");
-                    }
-                }
-
-                if (file_put_contents($outputFile, $flogicCode) === false) {
-                    throw new Exception("Could not write to output file: {$outputFile}");
-                }
-
-                if ($this->options['debug']) {
-                    fwrite(STDERR, "Successfully compiled {$inputFile} -> {$outputFile}\n");
-                } else {
-                    echo "Compiled: {$inputFile} -> {$outputFile}\n";
-                }
-            }
-
-            return 0;
-
-        } catch (Exception $e) {
-            throw new Exception("Compilation failed: " . $e->getMessage());
+        switch ($format) {
+            case 'json':
+                $io->block(json_encode($ast->toArray(), JSON_PRETTY_PRINT), null, 'fg=cyan');
+                break;
+            case 'dot':
+                $dotOutput = $this->generateDotNotation($ast);
+                $io->block($dotOutput, null, 'fg=green');
+                break;
+            default:
+                $io->block($this->formatAstForDisplay($ast), null, 'fg=yellow');
         }
     }
 
-    /**
-     * Convert parser result to proper ProgramNode
-     */
-    private function createProgramNodeFromResult($parseResult): ProgramNode
-    {
-        $location = new SourceLocation(1, 1, $this->options['debug'] ? 'input' : null);
+    private function generateOutput(
+        array $results,
+        ?string $outputFile,
+        ?string $outputDir,
+        ?string $moduleName,
+        SymfonyStyle $io,
+        string $format
+    ): void {
+        $io->section('Generating Output');
 
-        // If it's already a ProgramNode, return it
-        if ($parseResult instanceof ProgramNode) {
-            return $parseResult;
-        }
-
-        // If it's an array, extract statements from it
-        $statements = [];
-
-        if (is_array($parseResult)) {
-            $statements = $this->extractStatementsFromArray($parseResult);
+        if ($outputFile) {
+            // Single file output
+            $this->generateSingleFileOutput($results, $outputFile, $io, $format);
+        } elseif ($outputDir) {
+            // Multiple file output
+            $this->generateMultiFileOutput($results, $outputDir, $moduleName, $io, $format);
         } else {
-            // If it's a single object, wrap it in an array
-            if (is_object($parseResult)) {
-                $statements = [$parseResult];
+            // Output to console
+            $this->outputToConsole($results, $io, $format);
+        }
+    }
+
+    private function generateSingleFileOutput(
+        array $results,
+        string $outputFile,
+        SymfonyStyle $io,
+        string $format
+    ): void {
+        $combinedOutput = "";
+
+        foreach ($results as $file => $result) {
+            if ($result['success'] && $result['flogic']) {
+                $combinedOutput .= "% Generated from: " . basename($file) . "\n";
+                $combinedOutput .= $result['flogic'] . "\n\n";
             }
         }
 
-        return new ProgramNode($statements, $location);
+        $this->filesystem->dumpFile($outputFile, $combinedOutput);
+        $io->success("Output written to: {$outputFile}");
     }
 
-    /**
-     * Recursively extract AST nodes from parser result array
-     */
-    private function extractStatementsFromArray(array $result): array
-    {
-        $statements = [];
+    private function generateMultiFileOutput(
+        array $results,
+        string $outputDir,
+        ?string $moduleName,
+        SymfonyStyle $io,
+        string $format
+    ): void {
+        $this->filesystem->mkdir($outputDir);
 
-        foreach ($result as $item) {
-            if (is_object($item)) {
-                // Check if it's an AST node
-                if ($item instanceof ClassNode ||
-                    $item instanceof ObjectNode ||
-                    $item instanceof \OODSLToFLogic\AST\MethodNode ||
-                    $item instanceof \OODSLToFLogic\AST\RuleNode) {
-                    $statements[] = $item;
+        foreach ($results as $file => $result) {
+            if ($result['success'] && $result['flogic']) {
+                $baseName = pathinfo($file, PATHINFO_FILENAME);
+                $outputFile = $outputDir . '/' . $baseName . '.flr';
+
+                $this->filesystem->dumpFile($outputFile, $result['flogic']);
+                $io->text("Generated: {$outputFile}");
+            }
+        }
+
+        $io->success("Output written to directory: {$outputDir}");
+    }
+
+    private function outputToConsole(array $results, SymfonyStyle $io, string $format): void
+    {
+        foreach ($results as $file => $result) {
+            if ($result['success'] && $result['flogic']) {
+                $io->section("Generated F-Logic for: " . basename($file));
+                $io->block($result['flogic'], null, 'fg=green');
+            }
+        }
+    }
+
+    private function printSummary(array $results, SymfonyStyle $io): void
+    {
+        $io->section('Compilation Summary');
+
+        $total = count($results);
+        $successful = count(array_filter($results, fn($r) => $r['success']));
+        $failed = $total - $successful;
+
+        $io->table(
+            ['Metric', 'Count'],
+            [
+                ['Total Files', $total],
+                ['Successful', $successful],
+                ['Failed', $failed]
+            ]
+        );
+
+        if ($failed > 0) {
+            $io->warning("Some files failed to compile. Check the error messages above.");
+        } else {
+            $io->success("All files compiled successfully!");
+        }
+    }
+
+    private function formatAstForDisplay($node, int $indent = 0): string
+    {
+        $prefix = str_repeat('  ', $indent);
+        $className = (new \ReflectionClass($node))->getShortName();
+        $output = $prefix . $className;
+
+        // Add node-specific information
+        if (method_exists($node, 'name') && $node->name) {
+            $name = is_object($node->name) ? $node->name->name : $node->name;
+            $output .= " ({$name})";
+        }
+
+        $output .= "\n";
+
+        // Recursively display child nodes
+        $reflection = new \ReflectionClass($node);
+        foreach ($reflection->getProperties() as $property) {
+            $property->setAccessible(true);
+            $value = $property->getValue($node);
+
+            if (is_array($value)) {
+                if (!empty($value)) {
+                    $output .= $prefix . "  {$property->getName()}:\n";
+                    foreach ($value as $item) {
+                        if (is_object($item) && method_exists($item, 'accept')) {
+                            $output .= $this->formatAstForDisplay($item, $indent + 2);
+                        }
+                    }
                 }
-            } elseif (is_array($item)) {
-                // Recursively process nested arrays
-                $nestedStatements = $this->extractStatementsFromArray($item);
-                $statements = array_merge($statements, $nestedStatements);
+            } elseif (is_object($value) && method_exists($value, 'accept')) {
+                $output .= $prefix . "  {$property->getName()}:\n";
+                $output .= $this->formatAstForDisplay($value, $indent + 2);
             }
         }
 
-        return $statements;
+        return $output;
     }
 
-    /**
-     * Generate basic F-Logic without using visitor pattern (fallback)
-     */
-    private function generateBasicFLogic(ProgramNode $program): string
+    private function generateDotNotation($ast): string
     {
-        $output = "// Generated F-Logic code\n";
-        $output .= "// Compiled at " . date('Y-m-d H:i:s') . "\n\n";
+        $dot = "digraph AST {\n";
+        $dot .= "  node [shape=box];\n";
+        $nodeId = 0;
 
-        foreach ($program->getStatements() as $statement) {
-            if ($statement instanceof ClassNode) {
-                $output .= $this->generateClass($statement);
-            } elseif ($statement instanceof ObjectNode) {
-                $output .= $this->generateObject($statement);
+        $this->generateDotNode($ast, $nodeId, $dot);
+
+        $dot .= "}\n";
+        return $dot;
+    }
+
+    private function generateDotNode($node, int &$nodeId, string &$dot, int $parentId = null): int
+    {
+        $currentId = $nodeId++;
+        $className = (new \ReflectionClass($node))->getShortName();
+
+        $label = $className;
+        if (method_exists($node, 'name') && $node->name) {
+            $name = is_object($node->name) ? $node->name->name : $node->name;
+            $label .= "\\n({$name})";
+        }
+
+        $dot .= "  {$currentId} [label=\"{$label}\"];\n";
+
+        if ($parentId !== null) {
+            $dot .= "  {$parentId} -> {$currentId};\n";
+        }
+
+        // Process child nodes
+        $reflection = new \ReflectionClass($node);
+        foreach ($reflection->getProperties() as $property) {
+            $property->setAccessible(true);
+            $value = $property->getValue($node);
+
+            if (is_array($value)) {
+                foreach ($value as $item) {
+                    if (is_object($item) && method_exists($item, 'accept')) {
+                        $this->generateDotNode($item, $nodeId, $dot, $currentId);
+                    }
+                }
+            } elseif (is_object($value) && method_exists($value, 'accept')) {
+                $this->generateDotNode($value, $nodeId, $dot, $currentId);
             }
-            $output .= "\n";
         }
 
-        return $output;
-    }
-
-    private function generateClass(ClassNode $class): string
-    {
-        $output = "// Class: " . $class->getName() . "\n";
-
-        if ($class->getParentClass()) {
-            $output .= $class->getName() . "::" . $class->getParentClass() . ".\n";
-        }
-
-        // Generate property signatures for common properties
-        $output .= $class->getName() . "[brand => \\string].\n";
-        $output .= $class->getName() . "[year => \\integer].\n";
-
-        return $output;
-    }
-
-    private function generateObject(ObjectNode $object): string
-    {
-        $output = "// Object: " . $object->getName() . "\n";
-        $output .= $object->getName() . ":" . $object->getClassName() . ".\n";
-
-        // Generate property assignments (hardcoded for now)
-        $output .= $object->getName() . "[brand -> \"Honda\"].\n";
-        $output .= $object->getName() . "[year -> 2020].\n";
-
-        return $output;
-    }
-
-    private function showHelp(): void
-    {
-        echo <<<HELP
-OO-DSL to F-Logic Compiler
-
-USAGE:
-    oodsl-compile [OPTIONS] [INPUT_FILE]
-
-ARGUMENTS:
-    INPUT_FILE    Input DSL file to compile (if omitted, reads from stdin)
-
-OPTIONS:
-    -o, --output FILE    Output file (default: INPUT_FILE with .flr extension)
-    --debug             Enable debug output
-    -h, --help          Show this help message
-
-EXAMPLES:
-    # Compile example.oodsl to example.flr
-    oodsl-compile example.oodsl
-
-    # Compile with custom output file
-    oodsl-compile example.oodsl -o custom.flr
-
-    # Compile from stdin to stdout
-    echo 'class Person { string name; }' | oodsl-compile
-
-    # Compile from stdin to file
-    echo 'class Person { string name; }' | oodsl-compile -o output.flr
-
-OUTPUT:
-    - If no output file specified and input is a file: creates INPUT_FILE.flr
-    - If no output file specified and input is stdin: outputs to stdout
-    - If output file specified: writes to that file
-
-HELP;
+        return $currentId;
     }
 }

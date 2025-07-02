@@ -1,7 +1,6 @@
 <?php
 
-require __DIR__ . /../vendor/autoload.php';
-
+require_once dirname(__DIR__).'/autoloader.php';
 use hafriedlander\Peg\Parser;
 
 class CalculatedLiterals extends Parser\Basic {
