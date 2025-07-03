@@ -2,17 +2,23 @@
 // usage.php
 use OODSLFLogic\Parser\Generated\CommandParser;
 
-require '../vendor/autoload.php'; // Assuming Composer autoloader
-require_once __DIR__. '/../src/Parser/Generated/CommandParser.php'; // Include the generated parser class
+require_once __DIR__ . '/../vendor/autoload.php';
+
+//require_once __DIR__. '/../src/Parser/Generated/CommandParser.php'; // Include the generated parser class
+
+//$dslInput = 'User.ScheduleAppointment has {
+//  a UserId userId
+//  an AppointmentDatetime appointmentDatetime
+//  a Location location from {
+//    a LocationName locationName from location
+//    a Latitude latitude
+//    a Longitude longitude
+//  }
+//}';
 
 $dslInput = 'User.ScheduleAppointment has {
   a UserId userId
   an AppointmentDatetime appointmentDatetime
-  a Location location from {
-    a LocationName locationName from location
-    a Latitude latitude
-    a Longitude longitude
-  }
 }';
 
 try {
@@ -21,6 +27,7 @@ try {
 
     // Call the top-level rule to start parsing
     $ast = $parser->match_Command();
+
 
     if ($ast!== false) {
         echo "Successfully parsed DSL. Generated AST:\n";
