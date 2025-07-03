@@ -1,7 +1,9 @@
 <?php
 // usage.php
-require 'vendor/autoload.php'; // Assuming Composer autoloader
-require_once __DIR__. '/src/Parser/CommandParser.php'; // Include the generated parser class
+use OODSLFLogic\Parser\Generated\CommandParser;
+
+require '../vendor/autoload.php'; // Assuming Composer autoloader
+require_once __DIR__. '/../src/Parser/Generated/CommandParser.php'; // Include the generated parser class
 
 $dslInput = 'User.ScheduleAppointment has {
   a UserId userId
@@ -15,7 +17,7 @@ $dslInput = 'User.ScheduleAppointment has {
 
 try {
     // Instantiate the generated parser with the input string
-    $parser = new \App\Parser\CommandParser($dslInput);
+    $parser = new CommandParser($dslInput);
 
     // Call the top-level rule to start parsing
     $ast = $parser->match_Command();
