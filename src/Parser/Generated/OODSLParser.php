@@ -2944,24 +2944,28 @@ class OODSLParser extends Packrat
     function Program__finalise(&$result)
     {
         print_r("Program__finalise\n");
-        $result = new ProgramNode($result['Statements'] ?? []);
+        print_r($result);
+        //$result['Program'] = new ProgramNode($result['Statements'] ?? []);
+        //$result['Program'] =
     }
 
     function Statements__finalise(&$result)
     {
         print_r("Statements__finalise\n");
+        print_r($result);
         $statements = [];
         foreach ($result as $item) {
             if (is_object($item)) {
                 $statements[] = $item;
             }
         }
-        $result = $statements;
+        $result['Statements'] = $statements;
     }
 
     function Statement__finalise(&$result)
     {
         print_r("Statement__finalise\n");
+        print_r($result);
         return $result['Declaration'];
     }
 
