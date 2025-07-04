@@ -41,7 +41,7 @@ class Basic {
 
 	function rx( $rx ) {
 		if ( !isset( $this->regexps[$rx] ) ) $this->regexps[$rx] = new CachedRegexp( $this, $rx ) ;
-		return $this->regexps[$rx]->match() ;
+        return $this->regexps[$rx]->match() ;
 	}
 
 	function expression( $result, $stack, $value ) {
