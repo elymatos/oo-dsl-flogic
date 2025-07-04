@@ -56,7 +56,7 @@ class Parser implements ParserInterface
             $result = $this->pegParser->match_Program();
             print_r($result);
 
-            return $result;
+            return null;
 //        } else {
 //            throw new Exception("Parser has no suitable parse method");
 //        }
