@@ -56,7 +56,10 @@ class OODSLParser extends Packrat
 
     # Global whitespace rule - Crucial for backtracking
     # This rule will automatically be applied between every token in other rules.
-    _: ( /[\s\t\n\r]* / | LineComment | BlockComment )* >
+    #_: ( /[\s\t\n\r]* / | LineComment | BlockComment )*
+    #_:  /[\s\t\n\r]* / >
+    #_: (LineComment | BlockComment )*
+    _:  /\s* /
 
     LineComment: /\/\/[^\n]*  / >
     BlockComment: /\/\*.*?\*\/ / >
@@ -65,7 +68,7 @@ class OODSLParser extends Packrat
     Program: Statements
 
     # Simplified statement collection
-    Statements: Statement* >
+    Statements: Statement*
 
     # Single statement with now implicit whitespace handling via '_'
     Statement: Declaration
@@ -73,9 +76,9 @@ class OODSLParser extends Packrat
     Declaration: ModuleDecl | ClassDecl | ObjectDecl | MethodDecl | RuleDecl | QueryDecl | ImportDecl | ExportDecl
 
     # Module declaration
-    ModuleDecl: "module" _ Identifier _ "{" _ ModuleBody _ "}" >
+    ModuleDecl: "module" > Identifier > "{" > ModuleBody > "}" >
 
-    ModuleBody: ModuleStatement* >
+    ModuleBody: (ModuleStatement* | _ ) >
 
     ModuleStatement: ClassDecl | ObjectDecl | MethodDecl | RuleDecl | ExportDecl
 
@@ -218,7 +221,17 @@ class OODSLParser extends Packrat
 
     IdentList: Identifier ( "," Identifier )* >
 
-*/
+    */
+
+    function whitespace() {
+        $matched = preg_match( '/[ \t]+/', $this->string, $matches, PREG_OFFSET_CAPTURE, $this->pos ) ;
+        if ( $matched && $matches[0][1] == $this->pos ) {
+            $this->pos += strlen( $matches[0][0] );
+            return ' ' ;
+        }
+        return FALSE ;
+    }
+
     function Program__finalise(&$result)
     {
 //        print_r("Program__finalise\n");
