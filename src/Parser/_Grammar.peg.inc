@@ -446,9 +446,9 @@ IdentList: Identifier ( "," Identifier )*
     }
 
     # Comment definitions (PHP-specific workaround for BlockComment)
-#LineComment: /\/\/[^\n]* /**/ /
-#BlockComment: /\/\*.*?\*\/ /**/ /
+#LineComment: /\/\/[^\n]* /* */
+#BlockComment: /\/\*.*?\*\/ /* */ /
 
-*/
+
 
 }
