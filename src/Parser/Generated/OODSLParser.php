@@ -475,126 +475,138 @@ class OODSLParser extends Packrat
     }
 
 
-    /* ClassDecl: "class" Identifier Inheritance? "{" ClassBody "}" > */
+    /* ClassDecl: "class" > id:Identifier > inh:Inheritance? > "{" > ClassBody > "}" > */
     protected $match_ClassDecl_typestack = array('ClassDecl');
     function match_ClassDecl ($stack = array()) {
     	$matchrule = "ClassDecl"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_87 = NULL;
+    	$_92 = NULL;
     	do {
     		if (( $subres = $this->literal( 'class' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_87 = FALSE; break; }
+    		else { $_92 = FALSE; break; }
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
-    			$this->store( $result, $subres );
+    			$this->store( $result, $subres, "id" );
     		}
-    		else { $_87 = FALSE; break; }
-    		$res_82 = $result;
-    		$pos_82 = $this->pos;
+    		else { $_92 = FALSE; break; }
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
+    		$res_84 = $result;
+    		$pos_84 = $this->pos;
     		$matcher = 'match_'.'Inheritance'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
-    			$this->store( $result, $subres );
+    			$this->store( $result, $subres, "inh" );
     		}
     		else {
-    			$result = $res_82;
-    			$this->pos = $pos_82;
-    			unset( $res_82 );
-    			unset( $pos_82 );
+    			$result = $res_84;
+    			$this->pos = $pos_84;
+    			unset( $res_84 );
+    			unset( $pos_84 );
     		}
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
     		if (substr($this->string,$this->pos,1) == '{') {
     			$this->pos += 1;
     			$result["text"] .= '{';
     		}
-    		else { $_87 = FALSE; break; }
+    		else { $_92 = FALSE; break; }
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
     		$matcher = 'match_'.'ClassBody'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_87 = FALSE; break; }
+    		else { $_92 = FALSE; break; }
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
     		if (substr($this->string,$this->pos,1) == '}') {
     			$this->pos += 1;
     			$result["text"] .= '}';
     		}
-    		else { $_87 = FALSE; break; }
+    		else { $_92 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_87 = TRUE; break;
+    		$_92 = TRUE; break;
     	}
     	while(0);
-    	if( $_87 === TRUE ) { return $this->finalise($result); }
-    	if( $_87 === FALSE) { return FALSE; }
+    	if( $_92 === TRUE ) { return $this->finalise($result); }
+    	if( $_92 === FALSE) { return FALSE; }
     }
 
+public function ClassDecl_id (&$result, $sub ) {
+        print_r($sub);
+        print_r($result);
+        print_r("----\n");
+    }
 
-    /* Inheritance: "inherits" ( "structure" )? "from" Identifier  > */
+public function ClassDecl_inh (&$result, $sub ) {
+        print_r($sub);
+        print_r($result);
+        print_r("----\n");
+    }
+
+    /* Inheritance: "inherits" > ( "structure" )? > "from" > inheritance:Identifier  > */
     protected $match_Inheritance_typestack = array('Inheritance');
     function match_Inheritance ($stack = array()) {
     	$matchrule = "Inheritance"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_96 = NULL;
+    	$_104 = NULL;
     	do {
     		if (( $subres = $this->literal( 'inherits' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_96 = FALSE; break; }
-    		$res_92 = $result;
-    		$pos_92 = $this->pos;
-    		$_91 = NULL;
+    		else { $_104 = FALSE; break; }
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
+    		$res_98 = $result;
+    		$pos_98 = $this->pos;
+    		$_97 = NULL;
     		do {
     			if (( $subres = $this->literal( 'structure' ) ) !== FALSE) { $result["text"] .= $subres; }
-    			else { $_91 = FALSE; break; }
-    			$_91 = TRUE; break;
+    			else { $_97 = FALSE; break; }
+    			$_97 = TRUE; break;
     		}
     		while(0);
-    		if( $_91 === FALSE) {
-    			$result = $res_92;
-    			$this->pos = $pos_92;
-    			unset( $res_92 );
-    			unset( $pos_92 );
+    		if( $_97 === FALSE) {
+    			$result = $res_98;
+    			$this->pos = $pos_98;
+    			unset( $res_98 );
+    			unset( $pos_98 );
     		}
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
     		if (( $subres = $this->literal( 'from' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_96 = FALSE; break; }
+    		else { $_104 = FALSE; break; }
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
+    		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
+    		if ($subres !== FALSE) {
+    			$this->store( $result, $subres, "inheritance" );
+    		}
+    		else { $_104 = FALSE; break; }
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
+    		$_104 = TRUE; break;
+    	}
+    	while(0);
+    	if( $_104 === TRUE ) { return $this->finalise($result); }
+    	if( $_104 === FALSE) { return FALSE; }
+    }
+
+
+    /* ClassBody: ClassMember* */
+    protected $match_ClassBody_typestack = array('ClassBody');
+    function match_ClassBody ($stack = array()) {
+    	$matchrule = "ClassBody"; $result = $this->construct($matchrule, $matchrule, null);
+    	while (true) {
+    		$res_106 = $result;
+    		$pos_106 = $this->pos;
+    		$matcher = 'match_'.'ClassMember'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_96 = FALSE; break; }
-    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_96 = TRUE; break;
-    	}
-    	while(0);
-    	if( $_96 === TRUE ) { return $this->finalise($result); }
-    	if( $_96 === FALSE) { return FALSE; }
-    }
-
-
-    /* ClassBody: ClassMember* > */
-    protected $match_ClassBody_typestack = array('ClassBody');
-    function match_ClassBody ($stack = array()) {
-    	$matchrule = "ClassBody"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_100 = NULL;
-    	do {
-    		while (true) {
-    			$res_98 = $result;
-    			$pos_98 = $this->pos;
-    			$matcher = 'match_'.'ClassMember'; $key = $matcher; $pos = $this->pos;
-    			$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
-    			if ($subres !== FALSE) {
-    				$this->store( $result, $subres );
-    			}
-    			else {
-    				$result = $res_98;
-    				$this->pos = $pos_98;
-    				unset( $res_98 );
-    				unset( $pos_98 );
-    				break;
-    			}
+    		else {
+    			$result = $res_106;
+    			$this->pos = $pos_106;
+    			unset( $res_106 );
+    			unset( $pos_106 );
+    			break;
     		}
-    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_100 = TRUE; break;
     	}
-    	while(0);
-    	if( $_100 === TRUE ) { return $this->finalise($result); }
-    	if( $_100 === FALSE) { return FALSE; }
+    	return $this->finalise($result);
     }
 
 
@@ -602,76 +614,78 @@ class OODSLParser extends Packrat
     protected $match_ClassMember_typestack = array('ClassMember');
     function match_ClassMember ($stack = array()) {
     	$matchrule = "ClassMember"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_105 = NULL;
+    	$_110 = NULL;
     	do {
-    		$res_102 = $result;
-    		$pos_102 = $this->pos;
+    		$res_107 = $result;
+    		$pos_107 = $this->pos;
     		$matcher = 'match_'.'FieldDecl'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
-    			$_105 = TRUE; break;
+    			$_110 = TRUE; break;
     		}
-    		$result = $res_102;
-    		$this->pos = $pos_102;
+    		$result = $res_107;
+    		$this->pos = $pos_107;
     		$matcher = 'match_'.'MethodSignature'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
-    			$_105 = TRUE; break;
+    			$_110 = TRUE; break;
     		}
-    		$result = $res_102;
-    		$this->pos = $pos_102;
-    		$_105 = FALSE; break;
+    		$result = $res_107;
+    		$this->pos = $pos_107;
+    		$_110 = FALSE; break;
     	}
     	while(0);
-    	if( $_105 === TRUE ) { return $this->finalise($result); }
-    	if( $_105 === FALSE) { return FALSE; }
+    	if( $_110 === TRUE ) { return $this->finalise($result); }
+    	if( $_110 === FALSE) { return FALSE; }
     }
 
 
-    /* FieldDecl: TypeSpec Identifier Constraint? ";" > */
+    /* FieldDecl: TypeSpec > Identifier > Constraint? ";" > */
     protected $match_FieldDecl_typestack = array('FieldDecl');
     function match_FieldDecl ($stack = array()) {
     	$matchrule = "FieldDecl"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_112 = NULL;
+    	$_119 = NULL;
     	do {
     		$matcher = 'match_'.'TypeSpec'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_112 = FALSE; break; }
+    		else { $_119 = FALSE; break; }
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_112 = FALSE; break; }
-    		$res_109 = $result;
-    		$pos_109 = $this->pos;
+    		else { $_119 = FALSE; break; }
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
+    		$res_116 = $result;
+    		$pos_116 = $this->pos;
     		$matcher = 'match_'.'Constraint'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
     		else {
-    			$result = $res_109;
-    			$this->pos = $pos_109;
-    			unset( $res_109 );
-    			unset( $pos_109 );
+    			$result = $res_116;
+    			$this->pos = $pos_116;
+    			unset( $res_116 );
+    			unset( $pos_116 );
     		}
     		if (substr($this->string,$this->pos,1) == ';') {
     			$this->pos += 1;
     			$result["text"] .= ';';
     		}
-    		else { $_112 = FALSE; break; }
+    		else { $_119 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_112 = TRUE; break;
+    		$_119 = TRUE; break;
     	}
     	while(0);
-    	if( $_112 === TRUE ) { return $this->finalise($result); }
-    	if( $_112 === FALSE) { return FALSE; }
+    	if( $_119 === TRUE ) { return $this->finalise($result); }
+    	if( $_119 === FALSE) { return FALSE; }
     }
 
 
@@ -679,49 +693,49 @@ class OODSLParser extends Packrat
     protected $match_TypeSpec_typestack = array('TypeSpec');
     function match_TypeSpec ($stack = array()) {
     	$matchrule = "TypeSpec"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_121 = NULL;
+    	$_128 = NULL;
     	do {
-    		$res_114 = $result;
-    		$pos_114 = $this->pos;
+    		$res_121 = $result;
+    		$pos_121 = $this->pos;
     		$matcher = 'match_'.'CollectionType'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
-    			$_121 = TRUE; break;
+    			$_128 = TRUE; break;
     		}
-    		$result = $res_114;
-    		$this->pos = $pos_114;
-    		$_119 = NULL;
+    		$result = $res_121;
+    		$this->pos = $pos_121;
+    		$_126 = NULL;
     		do {
-    			$res_116 = $result;
-    			$pos_116 = $this->pos;
+    			$res_123 = $result;
+    			$pos_123 = $this->pos;
     			$matcher = 'match_'.'PrimitiveType'; $key = $matcher; $pos = $this->pos;
     			$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     			if ($subres !== FALSE) {
     				$this->store( $result, $subres );
-    				$_119 = TRUE; break;
+    				$_126 = TRUE; break;
     			}
-    			$result = $res_116;
-    			$this->pos = $pos_116;
+    			$result = $res_123;
+    			$this->pos = $pos_123;
     			$matcher = 'match_'.'UserType'; $key = $matcher; $pos = $this->pos;
     			$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     			if ($subres !== FALSE) {
     				$this->store( $result, $subres );
-    				$_119 = TRUE; break;
+    				$_126 = TRUE; break;
     			}
-    			$result = $res_116;
-    			$this->pos = $pos_116;
-    			$_119 = FALSE; break;
+    			$result = $res_123;
+    			$this->pos = $pos_123;
+    			$_126 = FALSE; break;
     		}
     		while(0);
-    		if( $_119 === TRUE ) { $_121 = TRUE; break; }
-    		$result = $res_114;
-    		$this->pos = $pos_114;
-    		$_121 = FALSE; break;
+    		if( $_126 === TRUE ) { $_128 = TRUE; break; }
+    		$result = $res_121;
+    		$this->pos = $pos_121;
+    		$_128 = FALSE; break;
     	}
     	while(0);
-    	if( $_121 === TRUE ) { return $this->finalise($result); }
-    	if( $_121 === FALSE) { return FALSE; }
+    	if( $_128 === TRUE ) { return $this->finalise($result); }
+    	if( $_128 === FALSE) { return FALSE; }
     }
 
 
@@ -729,59 +743,59 @@ class OODSLParser extends Packrat
     protected $match_PrimitiveType_typestack = array('PrimitiveType');
     function match_PrimitiveType ($stack = array()) {
     	$matchrule = "PrimitiveType"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_134 = NULL;
+    	$_141 = NULL;
     	do {
-    		$res_123 = $result;
-    		$pos_123 = $this->pos;
+    		$res_130 = $result;
+    		$pos_130 = $this->pos;
     		if (( $subres = $this->literal( 'string' ) ) !== FALSE) {
     			$result["text"] .= $subres;
-    			$_134 = TRUE; break;
+    			$_141 = TRUE; break;
     		}
-    		$result = $res_123;
-    		$this->pos = $pos_123;
-    		$_132 = NULL;
+    		$result = $res_130;
+    		$this->pos = $pos_130;
+    		$_139 = NULL;
     		do {
-    			$res_125 = $result;
-    			$pos_125 = $this->pos;
+    			$res_132 = $result;
+    			$pos_132 = $this->pos;
     			if (( $subres = $this->literal( 'integer' ) ) !== FALSE) {
     				$result["text"] .= $subres;
-    				$_132 = TRUE; break;
+    				$_139 = TRUE; break;
     			}
-    			$result = $res_125;
-    			$this->pos = $pos_125;
-    			$_130 = NULL;
+    			$result = $res_132;
+    			$this->pos = $pos_132;
+    			$_137 = NULL;
     			do {
-    				$res_127 = $result;
-    				$pos_127 = $this->pos;
+    				$res_134 = $result;
+    				$pos_134 = $this->pos;
     				if (( $subres = $this->literal( 'boolean' ) ) !== FALSE) {
     					$result["text"] .= $subres;
-    					$_130 = TRUE; break;
+    					$_137 = TRUE; break;
     				}
-    				$result = $res_127;
-    				$this->pos = $pos_127;
+    				$result = $res_134;
+    				$this->pos = $pos_134;
     				if (( $subres = $this->literal( 'float' ) ) !== FALSE) {
     					$result["text"] .= $subres;
-    					$_130 = TRUE; break;
+    					$_137 = TRUE; break;
     				}
-    				$result = $res_127;
-    				$this->pos = $pos_127;
-    				$_130 = FALSE; break;
+    				$result = $res_134;
+    				$this->pos = $pos_134;
+    				$_137 = FALSE; break;
     			}
     			while(0);
-    			if( $_130 === TRUE ) { $_132 = TRUE; break; }
-    			$result = $res_125;
-    			$this->pos = $pos_125;
-    			$_132 = FALSE; break;
+    			if( $_137 === TRUE ) { $_139 = TRUE; break; }
+    			$result = $res_132;
+    			$this->pos = $pos_132;
+    			$_139 = FALSE; break;
     		}
     		while(0);
-    		if( $_132 === TRUE ) { $_134 = TRUE; break; }
-    		$result = $res_123;
-    		$this->pos = $pos_123;
-    		$_134 = FALSE; break;
+    		if( $_139 === TRUE ) { $_141 = TRUE; break; }
+    		$result = $res_130;
+    		$this->pos = $pos_130;
+    		$_141 = FALSE; break;
     	}
     	while(0);
-    	if( $_134 === TRUE ) { return $this->finalise($result); }
-    	if( $_134 === FALSE) { return FALSE; }
+    	if( $_141 === TRUE ) { return $this->finalise($result); }
+    	if( $_141 === FALSE) { return FALSE; }
     }
 
 
@@ -789,20 +803,20 @@ class OODSLParser extends Packrat
     protected $match_UserType_typestack = array('UserType');
     function match_UserType ($stack = array()) {
     	$matchrule = "UserType"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_138 = NULL;
+    	$_145 = NULL;
     	do {
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_138 = FALSE; break; }
+    		else { $_145 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_138 = TRUE; break;
+    		$_145 = TRUE; break;
     	}
     	while(0);
-    	if( $_138 === TRUE ) { return $this->finalise($result); }
-    	if( $_138 === FALSE) { return FALSE; }
+    	if( $_145 === TRUE ) { return $this->finalise($result); }
+    	if( $_145 === FALSE) { return FALSE; }
     }
 
 
@@ -810,49 +824,49 @@ class OODSLParser extends Packrat
     protected $match_CollectionType_typestack = array('CollectionType');
     function match_CollectionType ($stack = array()) {
     	$matchrule = "CollectionType"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_146 = NULL;
+    	$_153 = NULL;
     	do {
     		$matcher = 'match_'.'CollectionKeyword'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_146 = FALSE; break; }
+    		else { $_153 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '<') {
     			$this->pos += 1;
     			$result["text"] .= '<';
     		}
-    		else { $_146 = FALSE; break; }
+    		else { $_153 = FALSE; break; }
     		$matcher = 'match_'.'TypeSpec'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_146 = FALSE; break; }
+    		else { $_153 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '>') {
     			$this->pos += 1;
     			$result["text"] .= '>';
     		}
-    		else { $_146 = FALSE; break; }
-    		$res_144 = $result;
-    		$pos_144 = $this->pos;
+    		else { $_153 = FALSE; break; }
+    		$res_151 = $result;
+    		$pos_151 = $this->pos;
     		$matcher = 'match_'.'Constraint'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
     		else {
-    			$result = $res_144;
-    			$this->pos = $pos_144;
-    			unset( $res_144 );
-    			unset( $pos_144 );
+    			$result = $res_151;
+    			$this->pos = $pos_151;
+    			unset( $res_151 );
+    			unset( $pos_151 );
     		}
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_146 = TRUE; break;
+    		$_153 = TRUE; break;
     	}
     	while(0);
-    	if( $_146 === TRUE ) { return $this->finalise($result); }
-    	if( $_146 === FALSE) { return FALSE; }
+    	if( $_153 === TRUE ) { return $this->finalise($result); }
+    	if( $_153 === FALSE) { return FALSE; }
     }
 
 
@@ -860,43 +874,43 @@ class OODSLParser extends Packrat
     protected $match_CollectionKeyword_typestack = array('CollectionKeyword');
     function match_CollectionKeyword ($stack = array()) {
     	$matchrule = "CollectionKeyword"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_155 = NULL;
+    	$_162 = NULL;
     	do {
-    		$res_148 = $result;
-    		$pos_148 = $this->pos;
+    		$res_155 = $result;
+    		$pos_155 = $this->pos;
     		if (( $subres = $this->literal( 'set' ) ) !== FALSE) {
     			$result["text"] .= $subres;
-    			$_155 = TRUE; break;
+    			$_162 = TRUE; break;
     		}
-    		$result = $res_148;
-    		$this->pos = $pos_148;
-    		$_153 = NULL;
+    		$result = $res_155;
+    		$this->pos = $pos_155;
+    		$_160 = NULL;
     		do {
-    			$res_150 = $result;
-    			$pos_150 = $this->pos;
+    			$res_157 = $result;
+    			$pos_157 = $this->pos;
     			if (( $subres = $this->literal( 'list' ) ) !== FALSE) {
     				$result["text"] .= $subres;
-    				$_153 = TRUE; break;
+    				$_160 = TRUE; break;
     			}
-    			$result = $res_150;
-    			$this->pos = $pos_150;
+    			$result = $res_157;
+    			$this->pos = $pos_157;
     			if (( $subres = $this->literal( 'bag' ) ) !== FALSE) {
     				$result["text"] .= $subres;
-    				$_153 = TRUE; break;
+    				$_160 = TRUE; break;
     			}
-    			$result = $res_150;
-    			$this->pos = $pos_150;
-    			$_153 = FALSE; break;
+    			$result = $res_157;
+    			$this->pos = $pos_157;
+    			$_160 = FALSE; break;
     		}
     		while(0);
-    		if( $_153 === TRUE ) { $_155 = TRUE; break; }
-    		$result = $res_148;
-    		$this->pos = $pos_148;
-    		$_155 = FALSE; break;
+    		if( $_160 === TRUE ) { $_162 = TRUE; break; }
+    		$result = $res_155;
+    		$this->pos = $pos_155;
+    		$_162 = FALSE; break;
     	}
     	while(0);
-    	if( $_155 === TRUE ) { return $this->finalise($result); }
-    	if( $_155 === FALSE) { return FALSE; }
+    	if( $_162 === TRUE ) { return $this->finalise($result); }
+    	if( $_162 === FALSE) { return FALSE; }
     }
 
 
@@ -904,30 +918,30 @@ class OODSLParser extends Packrat
     protected $match_Constraint_typestack = array('Constraint');
     function match_Constraint ($stack = array()) {
     	$matchrule = "Constraint"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_161 = NULL;
+    	$_168 = NULL;
     	do {
     		if (substr($this->string,$this->pos,1) == '{') {
     			$this->pos += 1;
     			$result["text"] .= '{';
     		}
-    		else { $_161 = FALSE; break; }
+    		else { $_168 = FALSE; break; }
     		$matcher = 'match_'.'ConstraintExpr'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_161 = FALSE; break; }
+    		else { $_168 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '}') {
     			$this->pos += 1;
     			$result["text"] .= '}';
     		}
-    		else { $_161 = FALSE; break; }
+    		else { $_168 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_161 = TRUE; break;
+    		$_168 = TRUE; break;
     	}
     	while(0);
-    	if( $_161 === TRUE ) { return $this->finalise($result); }
-    	if( $_161 === FALSE) { return FALSE; }
+    	if( $_168 === TRUE ) { return $this->finalise($result); }
+    	if( $_168 === FALSE) { return FALSE; }
     }
 
 
@@ -935,31 +949,31 @@ class OODSLParser extends Packrat
     protected $match_ConstraintExpr_typestack = array('ConstraintExpr');
     function match_ConstraintExpr ($stack = array()) {
     	$matchrule = "ConstraintExpr"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_166 = NULL;
+    	$_173 = NULL;
     	do {
-    		$res_163 = $result;
-    		$pos_163 = $this->pos;
+    		$res_170 = $result;
+    		$pos_170 = $this->pos;
     		$matcher = 'match_'.'Range'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
-    			$_166 = TRUE; break;
+    			$_173 = TRUE; break;
     		}
-    		$result = $res_163;
-    		$this->pos = $pos_163;
+    		$result = $res_170;
+    		$this->pos = $pos_170;
     		$matcher = 'match_'.'Number'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
-    			$_166 = TRUE; break;
+    			$_173 = TRUE; break;
     		}
-    		$result = $res_163;
-    		$this->pos = $pos_163;
-    		$_166 = FALSE; break;
+    		$result = $res_170;
+    		$this->pos = $pos_170;
+    		$_173 = FALSE; break;
     	}
     	while(0);
-    	if( $_166 === TRUE ) { return $this->finalise($result); }
-    	if( $_166 === FALSE) { return FALSE; }
+    	if( $_173 === TRUE ) { return $this->finalise($result); }
+    	if( $_173 === FALSE) { return FALSE; }
     }
 
 
@@ -967,28 +981,28 @@ class OODSLParser extends Packrat
     protected $match_Range_typestack = array('Range');
     function match_Range ($stack = array()) {
     	$matchrule = "Range"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_172 = NULL;
+    	$_179 = NULL;
     	do {
     		$matcher = 'match_'.'Number'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_172 = FALSE; break; }
+    		else { $_179 = FALSE; break; }
     		if (( $subres = $this->literal( '..' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_172 = FALSE; break; }
+    		else { $_179 = FALSE; break; }
     		$matcher = 'match_'.'Number'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_172 = FALSE; break; }
+    		else { $_179 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_172 = TRUE; break;
+    		$_179 = TRUE; break;
     	}
     	while(0);
-    	if( $_172 === TRUE ) { return $this->finalise($result); }
-    	if( $_172 === FALSE) { return FALSE; }
+    	if( $_179 === TRUE ) { return $this->finalise($result); }
+    	if( $_179 === FALSE) { return FALSE; }
     }
 
 
@@ -996,54 +1010,54 @@ class OODSLParser extends Packrat
     protected $match_MethodSignature_typestack = array('MethodSignature');
     function match_MethodSignature ($stack = array()) {
     	$matchrule = "MethodSignature"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_181 = NULL;
+    	$_188 = NULL;
     	do {
     		$matcher = 'match_'.'TypeSpec'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_181 = FALSE; break; }
+    		else { $_188 = FALSE; break; }
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_181 = FALSE; break; }
+    		else { $_188 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '(') {
     			$this->pos += 1;
     			$result["text"] .= '(';
     		}
-    		else { $_181 = FALSE; break; }
-    		$res_177 = $result;
-    		$pos_177 = $this->pos;
+    		else { $_188 = FALSE; break; }
+    		$res_184 = $result;
+    		$pos_184 = $this->pos;
     		$matcher = 'match_'.'ParamList'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
     		else {
-    			$result = $res_177;
-    			$this->pos = $pos_177;
-    			unset( $res_177 );
-    			unset( $pos_177 );
+    			$result = $res_184;
+    			$this->pos = $pos_184;
+    			unset( $res_184 );
+    			unset( $pos_184 );
     		}
     		if (substr($this->string,$this->pos,1) == ')') {
     			$this->pos += 1;
     			$result["text"] .= ')';
     		}
-    		else { $_181 = FALSE; break; }
+    		else { $_188 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == ';') {
     			$this->pos += 1;
     			$result["text"] .= ';';
     		}
-    		else { $_181 = FALSE; break; }
+    		else { $_188 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_181 = TRUE; break;
+    		$_188 = TRUE; break;
     	}
     	while(0);
-    	if( $_181 === TRUE ) { return $this->finalise($result); }
-    	if( $_181 === FALSE) { return FALSE; }
+    	if( $_188 === TRUE ) { return $this->finalise($result); }
+    	if( $_188 === FALSE) { return FALSE; }
     }
 
 
@@ -1051,49 +1065,49 @@ class OODSLParser extends Packrat
     protected $match_ObjectDecl_typestack = array('ObjectDecl');
     function match_ObjectDecl ($stack = array()) {
     	$matchrule = "ObjectDecl"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_191 = NULL;
+    	$_198 = NULL;
     	do {
     		if (( $subres = $this->literal( 'object' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_191 = FALSE; break; }
+    		else { $_198 = FALSE; break; }
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_191 = FALSE; break; }
+    		else { $_198 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == ':') {
     			$this->pos += 1;
     			$result["text"] .= ':';
     		}
-    		else { $_191 = FALSE; break; }
+    		else { $_198 = FALSE; break; }
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_191 = FALSE; break; }
+    		else { $_198 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '{') {
     			$this->pos += 1;
     			$result["text"] .= '{';
     		}
-    		else { $_191 = FALSE; break; }
+    		else { $_198 = FALSE; break; }
     		$matcher = 'match_'.'ObjectBody'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_191 = FALSE; break; }
+    		else { $_198 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '}') {
     			$this->pos += 1;
     			$result["text"] .= '}';
     		}
-    		else { $_191 = FALSE; break; }
+    		else { $_198 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_191 = TRUE; break;
+    		$_198 = TRUE; break;
     	}
     	while(0);
-    	if( $_191 === TRUE ) { return $this->finalise($result); }
-    	if( $_191 === FALSE) { return FALSE; }
+    	if( $_198 === TRUE ) { return $this->finalise($result); }
+    	if( $_198 === FALSE) { return FALSE; }
     }
 
 
@@ -1101,62 +1115,24 @@ class OODSLParser extends Packrat
     protected $match_ObjectBody_typestack = array('ObjectBody');
     function match_ObjectBody ($stack = array()) {
     	$matchrule = "ObjectBody"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_195 = NULL;
+    	$_202 = NULL;
     	do {
     		while (true) {
-    			$res_193 = $result;
-    			$pos_193 = $this->pos;
+    			$res_200 = $result;
+    			$pos_200 = $this->pos;
     			$matcher = 'match_'.'Assignment'; $key = $matcher; $pos = $this->pos;
     			$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     			if ($subres !== FALSE) {
     				$this->store( $result, $subres );
     			}
     			else {
-    				$result = $res_193;
-    				$this->pos = $pos_193;
-    				unset( $res_193 );
-    				unset( $pos_193 );
+    				$result = $res_200;
+    				$this->pos = $pos_200;
+    				unset( $res_200 );
+    				unset( $pos_200 );
     				break;
     			}
     		}
-    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_195 = TRUE; break;
-    	}
-    	while(0);
-    	if( $_195 === TRUE ) { return $this->finalise($result); }
-    	if( $_195 === FALSE) { return FALSE; }
-    }
-
-
-    /* Assignment: Identifier AssignOp Expression ";" > */
-    protected $match_Assignment_typestack = array('Assignment');
-    function match_Assignment ($stack = array()) {
-    	$matchrule = "Assignment"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_202 = NULL;
-    	do {
-    		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
-    		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
-    		if ($subres !== FALSE) {
-    			$this->store( $result, $subres );
-    		}
-    		else { $_202 = FALSE; break; }
-    		$matcher = 'match_'.'AssignOp'; $key = $matcher; $pos = $this->pos;
-    		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
-    		if ($subres !== FALSE) {
-    			$this->store( $result, $subres );
-    		}
-    		else { $_202 = FALSE; break; }
-    		$matcher = 'match_'.'Expression'; $key = $matcher; $pos = $this->pos;
-    		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
-    		if ($subres !== FALSE) {
-    			$this->store( $result, $subres );
-    		}
-    		else { $_202 = FALSE; break; }
-    		if (substr($this->string,$this->pos,1) == ';') {
-    			$this->pos += 1;
-    			$result["text"] .= ';';
-    		}
-    		else { $_202 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
     		$_202 = TRUE; break;
     	}
@@ -1166,48 +1142,86 @@ class OODSLParser extends Packrat
     }
 
 
+    /* Assignment: Identifier AssignOp Expression ";" > */
+    protected $match_Assignment_typestack = array('Assignment');
+    function match_Assignment ($stack = array()) {
+    	$matchrule = "Assignment"; $result = $this->construct($matchrule, $matchrule, null);
+    	$_209 = NULL;
+    	do {
+    		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
+    		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
+    		if ($subres !== FALSE) {
+    			$this->store( $result, $subres );
+    		}
+    		else { $_209 = FALSE; break; }
+    		$matcher = 'match_'.'AssignOp'; $key = $matcher; $pos = $this->pos;
+    		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
+    		if ($subres !== FALSE) {
+    			$this->store( $result, $subres );
+    		}
+    		else { $_209 = FALSE; break; }
+    		$matcher = 'match_'.'Expression'; $key = $matcher; $pos = $this->pos;
+    		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
+    		if ($subres !== FALSE) {
+    			$this->store( $result, $subres );
+    		}
+    		else { $_209 = FALSE; break; }
+    		if (substr($this->string,$this->pos,1) == ';') {
+    			$this->pos += 1;
+    			$result["text"] .= ';';
+    		}
+    		else { $_209 = FALSE; break; }
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
+    		$_209 = TRUE; break;
+    	}
+    	while(0);
+    	if( $_209 === TRUE ) { return $this->finalise($result); }
+    	if( $_209 === FALSE) { return FALSE; }
+    }
+
+
     /* AssignOp: "+=" | "-=" | "=" */
     protected $match_AssignOp_typestack = array('AssignOp');
     function match_AssignOp ($stack = array()) {
     	$matchrule = "AssignOp"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_211 = NULL;
+    	$_218 = NULL;
     	do {
-    		$res_204 = $result;
-    		$pos_204 = $this->pos;
+    		$res_211 = $result;
+    		$pos_211 = $this->pos;
     		if (( $subres = $this->literal( '+=' ) ) !== FALSE) {
     			$result["text"] .= $subres;
-    			$_211 = TRUE; break;
+    			$_218 = TRUE; break;
     		}
-    		$result = $res_204;
-    		$this->pos = $pos_204;
-    		$_209 = NULL;
+    		$result = $res_211;
+    		$this->pos = $pos_211;
+    		$_216 = NULL;
     		do {
-    			$res_206 = $result;
-    			$pos_206 = $this->pos;
+    			$res_213 = $result;
+    			$pos_213 = $this->pos;
     			if (( $subres = $this->literal( '-=' ) ) !== FALSE) {
     				$result["text"] .= $subres;
-    				$_209 = TRUE; break;
+    				$_216 = TRUE; break;
     			}
-    			$result = $res_206;
-    			$this->pos = $pos_206;
+    			$result = $res_213;
+    			$this->pos = $pos_213;
     			if (substr($this->string,$this->pos,1) == '=') {
     				$this->pos += 1;
     				$result["text"] .= '=';
-    				$_209 = TRUE; break;
+    				$_216 = TRUE; break;
     			}
-    			$result = $res_206;
-    			$this->pos = $pos_206;
-    			$_209 = FALSE; break;
+    			$result = $res_213;
+    			$this->pos = $pos_213;
+    			$_216 = FALSE; break;
     		}
     		while(0);
-    		if( $_209 === TRUE ) { $_211 = TRUE; break; }
-    		$result = $res_204;
-    		$this->pos = $pos_204;
-    		$_211 = FALSE; break;
+    		if( $_216 === TRUE ) { $_218 = TRUE; break; }
+    		$result = $res_211;
+    		$this->pos = $pos_211;
+    		$_218 = FALSE; break;
     	}
     	while(0);
-    	if( $_211 === TRUE ) { return $this->finalise($result); }
-    	if( $_211 === FALSE) { return FALSE; }
+    	if( $_218 === TRUE ) { return $this->finalise($result); }
+    	if( $_218 === FALSE) { return FALSE; }
     }
 
 
@@ -1215,64 +1229,64 @@ class OODSLParser extends Packrat
     protected $match_MethodDecl_typestack = array('MethodDecl');
     function match_MethodDecl ($stack = array()) {
     	$matchrule = "MethodDecl"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_221 = NULL;
+    	$_228 = NULL;
     	do {
     		if (( $subres = $this->literal( 'method' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_221 = FALSE; break; }
+    		else { $_228 = FALSE; break; }
     		$matcher = 'match_'.'QualifiedName'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_221 = FALSE; break; }
+    		else { $_228 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '(') {
     			$this->pos += 1;
     			$result["text"] .= '(';
     		}
-    		else { $_221 = FALSE; break; }
-    		$res_216 = $result;
-    		$pos_216 = $this->pos;
+    		else { $_228 = FALSE; break; }
+    		$res_223 = $result;
+    		$pos_223 = $this->pos;
     		$matcher = 'match_'.'ParamList'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
     		else {
-    			$result = $res_216;
-    			$this->pos = $pos_216;
-    			unset( $res_216 );
-    			unset( $pos_216 );
+    			$result = $res_223;
+    			$this->pos = $pos_223;
+    			unset( $res_223 );
+    			unset( $pos_223 );
     		}
     		if (substr($this->string,$this->pos,1) == ')') {
     			$this->pos += 1;
     			$result["text"] .= ')';
     		}
-    		else { $_221 = FALSE; break; }
-    		$res_218 = $result;
-    		$pos_218 = $this->pos;
+    		else { $_228 = FALSE; break; }
+    		$res_225 = $result;
+    		$pos_225 = $this->pos;
     		$matcher = 'match_'.'ReturnType'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
     		else {
-    			$result = $res_218;
-    			$this->pos = $pos_218;
-    			unset( $res_218 );
-    			unset( $pos_218 );
+    			$result = $res_225;
+    			$this->pos = $pos_225;
+    			unset( $res_225 );
+    			unset( $pos_225 );
     		}
     		$matcher = 'match_'.'BlockStmt'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_221 = FALSE; break; }
+    		else { $_228 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_221 = TRUE; break;
+    		$_228 = TRUE; break;
     	}
     	while(0);
-    	if( $_221 === TRUE ) { return $this->finalise($result); }
-    	if( $_221 === FALSE) { return FALSE; }
+    	if( $_228 === TRUE ) { return $this->finalise($result); }
+    	if( $_228 === FALSE) { return FALSE; }
     }
 
 
@@ -1280,22 +1294,22 @@ class OODSLParser extends Packrat
     protected $match_ReturnType_typestack = array('ReturnType');
     function match_ReturnType ($stack = array()) {
     	$matchrule = "ReturnType"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_226 = NULL;
+    	$_233 = NULL;
     	do {
     		if (( $subres = $this->literal( 'returns' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_226 = FALSE; break; }
+    		else { $_233 = FALSE; break; }
     		$matcher = 'match_'.'TypeSpec'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_226 = FALSE; break; }
+    		else { $_233 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_226 = TRUE; break;
+    		$_233 = TRUE; break;
     	}
     	while(0);
-    	if( $_226 === TRUE ) { return $this->finalise($result); }
-    	if( $_226 === FALSE) { return FALSE; }
+    	if( $_233 === TRUE ) { return $this->finalise($result); }
+    	if( $_233 === FALSE) { return FALSE; }
     }
 
 
@@ -1303,47 +1317,47 @@ class OODSLParser extends Packrat
     protected $match_ParamList_typestack = array('ParamList');
     function match_ParamList ($stack = array()) {
     	$matchrule = "ParamList"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_234 = NULL;
+    	$_241 = NULL;
     	do {
     		$matcher = 'match_'.'Parameter'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_234 = FALSE; break; }
+    		else { $_241 = FALSE; break; }
     		while (true) {
-    			$res_232 = $result;
-    			$pos_232 = $this->pos;
-    			$_231 = NULL;
+    			$res_239 = $result;
+    			$pos_239 = $this->pos;
+    			$_238 = NULL;
     			do {
     				if (substr($this->string,$this->pos,1) == ',') {
     					$this->pos += 1;
     					$result["text"] .= ',';
     				}
-    				else { $_231 = FALSE; break; }
+    				else { $_238 = FALSE; break; }
     				$matcher = 'match_'.'Parameter'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
     				}
-    				else { $_231 = FALSE; break; }
-    				$_231 = TRUE; break;
+    				else { $_238 = FALSE; break; }
+    				$_238 = TRUE; break;
     			}
     			while(0);
-    			if( $_231 === FALSE) {
-    				$result = $res_232;
-    				$this->pos = $pos_232;
-    				unset( $res_232 );
-    				unset( $pos_232 );
+    			if( $_238 === FALSE) {
+    				$result = $res_239;
+    				$this->pos = $pos_239;
+    				unset( $res_239 );
+    				unset( $pos_239 );
     				break;
     			}
     		}
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_234 = TRUE; break;
+    		$_241 = TRUE; break;
     	}
     	while(0);
-    	if( $_234 === TRUE ) { return $this->finalise($result); }
-    	if( $_234 === FALSE) { return FALSE; }
+    	if( $_241 === TRUE ) { return $this->finalise($result); }
+    	if( $_241 === FALSE) { return FALSE; }
     }
 
 
@@ -1351,26 +1365,26 @@ class OODSLParser extends Packrat
     protected $match_Parameter_typestack = array('Parameter');
     function match_Parameter ($stack = array()) {
     	$matchrule = "Parameter"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_239 = NULL;
+    	$_246 = NULL;
     	do {
     		$matcher = 'match_'.'TypeSpec'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_239 = FALSE; break; }
+    		else { $_246 = FALSE; break; }
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_239 = FALSE; break; }
+    		else { $_246 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_239 = TRUE; break;
+    		$_246 = TRUE; break;
     	}
     	while(0);
-    	if( $_239 === TRUE ) { return $this->finalise($result); }
-    	if( $_239 === FALSE) { return FALSE; }
+    	if( $_246 === TRUE ) { return $this->finalise($result); }
+    	if( $_246 === FALSE) { return FALSE; }
     }
 
 
@@ -1378,38 +1392,38 @@ class OODSLParser extends Packrat
     protected $match_RuleDecl_typestack = array('RuleDecl');
     function match_RuleDecl ($stack = array()) {
     	$matchrule = "RuleDecl"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_247 = NULL;
+    	$_254 = NULL;
     	do {
     		if (( $subres = $this->literal( 'rule' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_247 = FALSE; break; }
+    		else { $_254 = FALSE; break; }
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_247 = FALSE; break; }
+    		else { $_254 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '{') {
     			$this->pos += 1;
     			$result["text"] .= '{';
     		}
-    		else { $_247 = FALSE; break; }
+    		else { $_254 = FALSE; break; }
     		$matcher = 'match_'.'RuleBody'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_247 = FALSE; break; }
+    		else { $_254 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '}') {
     			$this->pos += 1;
     			$result["text"] .= '}';
     		}
-    		else { $_247 = FALSE; break; }
+    		else { $_254 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_247 = TRUE; break;
+    		$_254 = TRUE; break;
     	}
     	while(0);
-    	if( $_247 === TRUE ) { return $this->finalise($result); }
-    	if( $_247 === FALSE) { return FALSE; }
+    	if( $_254 === TRUE ) { return $this->finalise($result); }
+    	if( $_254 === FALSE) { return FALSE; }
     }
 
 
@@ -1417,31 +1431,31 @@ class OODSLParser extends Packrat
     protected $match_RuleBody_typestack = array('RuleBody');
     function match_RuleBody ($stack = array()) {
     	$matchrule = "RuleBody"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_252 = NULL;
+    	$_259 = NULL;
     	do {
-    		$res_249 = $result;
-    		$pos_249 = $this->pos;
+    		$res_256 = $result;
+    		$pos_256 = $this->pos;
     		$matcher = 'match_'.'IfStmt'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
-    			$_252 = TRUE; break;
+    			$_259 = TRUE; break;
     		}
-    		$result = $res_249;
-    		$this->pos = $pos_249;
+    		$result = $res_256;
+    		$this->pos = $pos_256;
     		$matcher = 'match_'.'Assignment'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
-    			$_252 = TRUE; break;
+    			$_259 = TRUE; break;
     		}
-    		$result = $res_249;
-    		$this->pos = $pos_249;
-    		$_252 = FALSE; break;
+    		$result = $res_256;
+    		$this->pos = $pos_256;
+    		$_259 = FALSE; break;
     	}
     	while(0);
-    	if( $_252 === TRUE ) { return $this->finalise($result); }
-    	if( $_252 === FALSE) { return FALSE; }
+    	if( $_259 === TRUE ) { return $this->finalise($result); }
+    	if( $_259 === FALSE) { return FALSE; }
     }
 
 
@@ -1449,38 +1463,38 @@ class OODSLParser extends Packrat
     protected $match_QueryDecl_typestack = array('QueryDecl');
     function match_QueryDecl ($stack = array()) {
     	$matchrule = "QueryDecl"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_260 = NULL;
+    	$_267 = NULL;
     	do {
     		if (( $subres = $this->literal( 'query' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_260 = FALSE; break; }
+    		else { $_267 = FALSE; break; }
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_260 = FALSE; break; }
+    		else { $_267 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '{') {
     			$this->pos += 1;
     			$result["text"] .= '{';
     		}
-    		else { $_260 = FALSE; break; }
+    		else { $_267 = FALSE; break; }
     		$matcher = 'match_'.'QueryBody'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_260 = FALSE; break; }
+    		else { $_267 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '}') {
     			$this->pos += 1;
     			$result["text"] .= '}';
     		}
-    		else { $_260 = FALSE; break; }
+    		else { $_267 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_260 = TRUE; break;
+    		$_267 = TRUE; break;
     	}
     	while(0);
-    	if( $_260 === TRUE ) { return $this->finalise($result); }
-    	if( $_260 === FALSE) { return FALSE; }
+    	if( $_267 === TRUE ) { return $this->finalise($result); }
+    	if( $_267 === FALSE) { return FALSE; }
     }
 
 
@@ -1488,35 +1502,35 @@ class OODSLParser extends Packrat
     protected $match_QueryBody_typestack = array('QueryBody');
     function match_QueryBody ($stack = array()) {
     	$matchrule = "QueryBody"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_268 = NULL;
+    	$_275 = NULL;
     	do {
     		if (( $subres = $this->literal( 'select' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_268 = FALSE; break; }
+    		else { $_275 = FALSE; break; }
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_268 = FALSE; break; }
+    		else { $_275 = FALSE; break; }
     		if (( $subres = $this->literal( 'where' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_268 = FALSE; break; }
+    		else { $_275 = FALSE; break; }
     		$matcher = 'match_'.'Expression'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_268 = FALSE; break; }
+    		else { $_275 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == ';') {
     			$this->pos += 1;
     			$result["text"] .= ';';
     		}
-    		else { $_268 = FALSE; break; }
+    		else { $_275 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_268 = TRUE; break;
+    		$_275 = TRUE; break;
     	}
     	while(0);
-    	if( $_268 === TRUE ) { return $this->finalise($result); }
-    	if( $_268 === FALSE) { return FALSE; }
+    	if( $_275 === TRUE ) { return $this->finalise($result); }
+    	if( $_275 === FALSE) { return FALSE; }
     }
 
 
@@ -1524,51 +1538,51 @@ class OODSLParser extends Packrat
     protected $match_IfStmt_typestack = array('IfStmt');
     function match_IfStmt ($stack = array()) {
     	$matchrule = "IfStmt"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_277 = NULL;
+    	$_284 = NULL;
     	do {
     		if (( $subres = $this->literal( 'if' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_277 = FALSE; break; }
+    		else { $_284 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '(') {
     			$this->pos += 1;
     			$result["text"] .= '(';
     		}
-    		else { $_277 = FALSE; break; }
+    		else { $_284 = FALSE; break; }
     		$matcher = 'match_'.'Expression'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_277 = FALSE; break; }
+    		else { $_284 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == ')') {
     			$this->pos += 1;
     			$result["text"] .= ')';
     		}
-    		else { $_277 = FALSE; break; }
+    		else { $_284 = FALSE; break; }
     		$matcher = 'match_'.'BlockStmt'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_277 = FALSE; break; }
-    		$res_275 = $result;
-    		$pos_275 = $this->pos;
+    		else { $_284 = FALSE; break; }
+    		$res_282 = $result;
+    		$pos_282 = $this->pos;
     		$matcher = 'match_'.'ElseClause'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
     		else {
-    			$result = $res_275;
-    			$this->pos = $pos_275;
-    			unset( $res_275 );
-    			unset( $pos_275 );
+    			$result = $res_282;
+    			$this->pos = $pos_282;
+    			unset( $res_282 );
+    			unset( $pos_282 );
     		}
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_277 = TRUE; break;
+    		$_284 = TRUE; break;
     	}
     	while(0);
-    	if( $_277 === TRUE ) { return $this->finalise($result); }
-    	if( $_277 === FALSE) { return FALSE; }
+    	if( $_284 === TRUE ) { return $this->finalise($result); }
+    	if( $_284 === FALSE) { return FALSE; }
     }
 
 
@@ -1576,22 +1590,22 @@ class OODSLParser extends Packrat
     protected $match_ElseClause_typestack = array('ElseClause');
     function match_ElseClause ($stack = array()) {
     	$matchrule = "ElseClause"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_282 = NULL;
+    	$_289 = NULL;
     	do {
     		if (( $subres = $this->literal( 'else' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_282 = FALSE; break; }
+    		else { $_289 = FALSE; break; }
     		$matcher = 'match_'.'BlockStmt'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_282 = FALSE; break; }
+    		else { $_289 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_282 = TRUE; break;
+    		$_289 = TRUE; break;
     	}
     	while(0);
-    	if( $_282 === TRUE ) { return $this->finalise($result); }
-    	if( $_282 === FALSE) { return FALSE; }
+    	if( $_289 === TRUE ) { return $this->finalise($result); }
+    	if( $_289 === FALSE) { return FALSE; }
     }
 
 
@@ -1599,30 +1613,30 @@ class OODSLParser extends Packrat
     protected $match_BlockStmt_typestack = array('BlockStmt');
     function match_BlockStmt ($stack = array()) {
     	$matchrule = "BlockStmt"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_288 = NULL;
+    	$_295 = NULL;
     	do {
     		if (substr($this->string,$this->pos,1) == '{') {
     			$this->pos += 1;
     			$result["text"] .= '{';
     		}
-    		else { $_288 = FALSE; break; }
+    		else { $_295 = FALSE; break; }
     		$matcher = 'match_'.'StmtList'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_288 = FALSE; break; }
+    		else { $_295 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '}') {
     			$this->pos += 1;
     			$result["text"] .= '}';
     		}
-    		else { $_288 = FALSE; break; }
+    		else { $_295 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_288 = TRUE; break;
+    		$_295 = TRUE; break;
     	}
     	while(0);
-    	if( $_288 === TRUE ) { return $this->finalise($result); }
-    	if( $_288 === FALSE) { return FALSE; }
+    	if( $_295 === TRUE ) { return $this->finalise($result); }
+    	if( $_295 === FALSE) { return FALSE; }
     }
 
 
@@ -1630,30 +1644,30 @@ class OODSLParser extends Packrat
     protected $match_StmtList_typestack = array('StmtList');
     function match_StmtList ($stack = array()) {
     	$matchrule = "StmtList"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_292 = NULL;
+    	$_299 = NULL;
     	do {
     		while (true) {
-    			$res_290 = $result;
-    			$pos_290 = $this->pos;
+    			$res_297 = $result;
+    			$pos_297 = $this->pos;
     			$matcher = 'match_'.'InnerStmt'; $key = $matcher; $pos = $this->pos;
     			$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     			if ($subres !== FALSE) {
     				$this->store( $result, $subres );
     			}
     			else {
-    				$result = $res_290;
-    				$this->pos = $pos_290;
-    				unset( $res_290 );
-    				unset( $pos_290 );
+    				$result = $res_297;
+    				$this->pos = $pos_297;
+    				unset( $res_297 );
+    				unset( $pos_297 );
     				break;
     			}
     		}
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_292 = TRUE; break;
+    		$_299 = TRUE; break;
     	}
     	while(0);
-    	if( $_292 === TRUE ) { return $this->finalise($result); }
-    	if( $_292 === FALSE) { return FALSE; }
+    	if( $_299 === TRUE ) { return $this->finalise($result); }
+    	if( $_299 === FALSE) { return FALSE; }
     }
 
 
@@ -1661,74 +1675,74 @@ class OODSLParser extends Packrat
     protected $match_InnerStmt_typestack = array('InnerStmt');
     function match_InnerStmt ($stack = array()) {
     	$matchrule = "InnerStmt"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_308 = NULL;
+    	$_315 = NULL;
     	do {
-    		$res_294 = $result;
-    		$pos_294 = $this->pos;
+    		$res_301 = $result;
+    		$pos_301 = $this->pos;
     		$matcher = 'match_'.'Assignment'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
-    			$_308 = TRUE; break;
+    			$_315 = TRUE; break;
     		}
-    		$result = $res_294;
-    		$this->pos = $pos_294;
-    		$_306 = NULL;
+    		$result = $res_301;
+    		$this->pos = $pos_301;
+    		$_313 = NULL;
     		do {
-    			$res_296 = $result;
-    			$pos_296 = $this->pos;
+    			$res_303 = $result;
+    			$pos_303 = $this->pos;
     			$matcher = 'match_'.'IfStmt'; $key = $matcher; $pos = $this->pos;
     			$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     			if ($subres !== FALSE) {
     				$this->store( $result, $subres );
-    				$_306 = TRUE; break;
+    				$_313 = TRUE; break;
     			}
-    			$result = $res_296;
-    			$this->pos = $pos_296;
-    			$_304 = NULL;
+    			$result = $res_303;
+    			$this->pos = $pos_303;
+    			$_311 = NULL;
     			do {
-    				$res_298 = $result;
-    				$pos_298 = $this->pos;
+    				$res_305 = $result;
+    				$pos_305 = $this->pos;
     				$matcher = 'match_'.'ReturnStmt'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
-    					$_304 = TRUE; break;
+    					$_311 = TRUE; break;
     				}
-    				$result = $res_298;
-    				$this->pos = $pos_298;
-    				$_302 = NULL;
+    				$result = $res_305;
+    				$this->pos = $pos_305;
+    				$_309 = NULL;
     				do {
     					$matcher = 'match_'.'ExprStmt'; $key = $matcher; $pos = $this->pos;
     					$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     					if ($subres !== FALSE) {
     						$this->store( $result, $subres );
     					}
-    					else { $_302 = FALSE; break; }
+    					else { $_309 = FALSE; break; }
     					if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    					$_302 = TRUE; break;
+    					$_309 = TRUE; break;
     				}
     				while(0);
-    				if( $_302 === TRUE ) { $_304 = TRUE; break; }
-    				$result = $res_298;
-    				$this->pos = $pos_298;
-    				$_304 = FALSE; break;
+    				if( $_309 === TRUE ) { $_311 = TRUE; break; }
+    				$result = $res_305;
+    				$this->pos = $pos_305;
+    				$_311 = FALSE; break;
     			}
     			while(0);
-    			if( $_304 === TRUE ) { $_306 = TRUE; break; }
-    			$result = $res_296;
-    			$this->pos = $pos_296;
-    			$_306 = FALSE; break;
+    			if( $_311 === TRUE ) { $_313 = TRUE; break; }
+    			$result = $res_303;
+    			$this->pos = $pos_303;
+    			$_313 = FALSE; break;
     		}
     		while(0);
-    		if( $_306 === TRUE ) { $_308 = TRUE; break; }
-    		$result = $res_294;
-    		$this->pos = $pos_294;
-    		$_308 = FALSE; break;
+    		if( $_313 === TRUE ) { $_315 = TRUE; break; }
+    		$result = $res_301;
+    		$this->pos = $pos_301;
+    		$_315 = FALSE; break;
     	}
     	while(0);
-    	if( $_308 === TRUE ) { return $this->finalise($result); }
-    	if( $_308 === FALSE) { return FALSE; }
+    	if( $_315 === TRUE ) { return $this->finalise($result); }
+    	if( $_315 === FALSE) { return FALSE; }
     }
 
 
@@ -1736,27 +1750,27 @@ class OODSLParser extends Packrat
     protected $match_ReturnStmt_typestack = array('ReturnStmt');
     function match_ReturnStmt ($stack = array()) {
     	$matchrule = "ReturnStmt"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_314 = NULL;
+    	$_321 = NULL;
     	do {
     		if (( $subres = $this->literal( 'return' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_314 = FALSE; break; }
+    		else { $_321 = FALSE; break; }
     		$matcher = 'match_'.'Expression'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_314 = FALSE; break; }
+    		else { $_321 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == ';') {
     			$this->pos += 1;
     			$result["text"] .= ';';
     		}
-    		else { $_314 = FALSE; break; }
+    		else { $_321 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_314 = TRUE; break;
+    		$_321 = TRUE; break;
     	}
     	while(0);
-    	if( $_314 === TRUE ) { return $this->finalise($result); }
-    	if( $_314 === FALSE) { return FALSE; }
+    	if( $_321 === TRUE ) { return $this->finalise($result); }
+    	if( $_321 === FALSE) { return FALSE; }
     }
 
 
@@ -1764,25 +1778,25 @@ class OODSLParser extends Packrat
     protected $match_ExprStmt_typestack = array('ExprStmt');
     function match_ExprStmt ($stack = array()) {
     	$matchrule = "ExprStmt"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_319 = NULL;
+    	$_326 = NULL;
     	do {
     		$matcher = 'match_'.'Expression'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_319 = FALSE; break; }
+    		else { $_326 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == ';') {
     			$this->pos += 1;
     			$result["text"] .= ';';
     		}
-    		else { $_319 = FALSE; break; }
+    		else { $_326 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_319 = TRUE; break;
+    		$_326 = TRUE; break;
     	}
     	while(0);
-    	if( $_319 === TRUE ) { return $this->finalise($result); }
-    	if( $_319 === FALSE) { return FALSE; }
+    	if( $_326 === TRUE ) { return $this->finalise($result); }
+    	if( $_326 === FALSE) { return FALSE; }
     }
 
 
@@ -1790,20 +1804,20 @@ class OODSLParser extends Packrat
     protected $match_Expression_typestack = array('Expression');
     function match_Expression ($stack = array()) {
     	$matchrule = "Expression"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_323 = NULL;
+    	$_330 = NULL;
     	do {
     		$matcher = 'match_'.'LogicalExpr'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_323 = FALSE; break; }
+    		else { $_330 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_323 = TRUE; break;
+    		$_330 = TRUE; break;
     	}
     	while(0);
-    	if( $_323 === TRUE ) { return $this->finalise($result); }
-    	if( $_323 === FALSE) { return FALSE; }
+    	if( $_330 === TRUE ) { return $this->finalise($result); }
+    	if( $_330 === FALSE) { return FALSE; }
     }
 
 
@@ -1811,48 +1825,48 @@ class OODSLParser extends Packrat
     protected $match_LogicalExpr_typestack = array('LogicalExpr');
     function match_LogicalExpr ($stack = array()) {
     	$matchrule = "LogicalExpr"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_331 = NULL;
+    	$_338 = NULL;
     	do {
     		$matcher = 'match_'.'ComparisonExpr'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_331 = FALSE; break; }
+    		else { $_338 = FALSE; break; }
     		while (true) {
-    			$res_329 = $result;
-    			$pos_329 = $this->pos;
-    			$_328 = NULL;
+    			$res_336 = $result;
+    			$pos_336 = $this->pos;
+    			$_335 = NULL;
     			do {
     				$matcher = 'match_'.'LogicalOp'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
     				}
-    				else { $_328 = FALSE; break; }
+    				else { $_335 = FALSE; break; }
     				$matcher = 'match_'.'ComparisonExpr'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
     				}
-    				else { $_328 = FALSE; break; }
-    				$_328 = TRUE; break;
+    				else { $_335 = FALSE; break; }
+    				$_335 = TRUE; break;
     			}
     			while(0);
-    			if( $_328 === FALSE) {
-    				$result = $res_329;
-    				$this->pos = $pos_329;
-    				unset( $res_329 );
-    				unset( $pos_329 );
+    			if( $_335 === FALSE) {
+    				$result = $res_336;
+    				$this->pos = $pos_336;
+    				unset( $res_336 );
+    				unset( $pos_336 );
     				break;
     			}
     		}
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_331 = TRUE; break;
+    		$_338 = TRUE; break;
     	}
     	while(0);
-    	if( $_331 === TRUE ) { return $this->finalise($result); }
-    	if( $_331 === FALSE) { return FALSE; }
+    	if( $_338 === TRUE ) { return $this->finalise($result); }
+    	if( $_338 === FALSE) { return FALSE; }
     }
 
 
@@ -1860,64 +1874,64 @@ class OODSLParser extends Packrat
     protected $match_LogicalOp_typestack = array('LogicalOp');
     function match_LogicalOp ($stack = array()) {
     	$matchrule = "LogicalOp"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_347 = NULL;
+    	$_354 = NULL;
     	do {
-    		$res_333 = $result;
-    		$pos_333 = $this->pos;
+    		$res_340 = $result;
+    		$pos_340 = $this->pos;
     		if (( $subres = $this->literal( '&&' ) ) !== FALSE) {
     			$result["text"] .= $subres;
-    			$_347 = TRUE; break;
+    			$_354 = TRUE; break;
     		}
-    		$result = $res_333;
-    		$this->pos = $pos_333;
-    		$_345 = NULL;
+    		$result = $res_340;
+    		$this->pos = $pos_340;
+    		$_352 = NULL;
     		do {
-    			$res_335 = $result;
-    			$pos_335 = $this->pos;
+    			$res_342 = $result;
+    			$pos_342 = $this->pos;
     			if (( $subres = $this->literal( '||' ) ) !== FALSE) {
     				$result["text"] .= $subres;
-    				$_345 = TRUE; break;
+    				$_352 = TRUE; break;
     			}
-    			$result = $res_335;
-    			$this->pos = $pos_335;
-    			$_343 = NULL;
+    			$result = $res_342;
+    			$this->pos = $pos_342;
+    			$_350 = NULL;
     			do {
-    				$res_337 = $result;
-    				$pos_337 = $this->pos;
+    				$res_344 = $result;
+    				$pos_344 = $this->pos;
     				if (( $subres = $this->literal( 'and' ) ) !== FALSE) {
     					$result["text"] .= $subres;
-    					$_343 = TRUE; break;
+    					$_350 = TRUE; break;
     				}
-    				$result = $res_337;
-    				$this->pos = $pos_337;
-    				$_341 = NULL;
+    				$result = $res_344;
+    				$this->pos = $pos_344;
+    				$_348 = NULL;
     				do {
     					if (( $subres = $this->literal( 'or' ) ) !== FALSE) { $result["text"] .= $subres; }
-    					else { $_341 = FALSE; break; }
+    					else { $_348 = FALSE; break; }
     					if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    					$_341 = TRUE; break;
+    					$_348 = TRUE; break;
     				}
     				while(0);
-    				if( $_341 === TRUE ) { $_343 = TRUE; break; }
-    				$result = $res_337;
-    				$this->pos = $pos_337;
-    				$_343 = FALSE; break;
+    				if( $_348 === TRUE ) { $_350 = TRUE; break; }
+    				$result = $res_344;
+    				$this->pos = $pos_344;
+    				$_350 = FALSE; break;
     			}
     			while(0);
-    			if( $_343 === TRUE ) { $_345 = TRUE; break; }
-    			$result = $res_335;
-    			$this->pos = $pos_335;
-    			$_345 = FALSE; break;
+    			if( $_350 === TRUE ) { $_352 = TRUE; break; }
+    			$result = $res_342;
+    			$this->pos = $pos_342;
+    			$_352 = FALSE; break;
     		}
     		while(0);
-    		if( $_345 === TRUE ) { $_347 = TRUE; break; }
-    		$result = $res_333;
-    		$this->pos = $pos_333;
-    		$_347 = FALSE; break;
+    		if( $_352 === TRUE ) { $_354 = TRUE; break; }
+    		$result = $res_340;
+    		$this->pos = $pos_340;
+    		$_354 = FALSE; break;
     	}
     	while(0);
-    	if( $_347 === TRUE ) { return $this->finalise($result); }
-    	if( $_347 === FALSE) { return FALSE; }
+    	if( $_354 === TRUE ) { return $this->finalise($result); }
+    	if( $_354 === FALSE) { return FALSE; }
     }
 
 
@@ -1925,45 +1939,45 @@ class OODSLParser extends Packrat
     protected $match_ComparisonExpr_typestack = array('ComparisonExpr');
     function match_ComparisonExpr ($stack = array()) {
     	$matchrule = "ComparisonExpr"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_355 = NULL;
+    	$_362 = NULL;
     	do {
     		$matcher = 'match_'.'AdditiveExpr'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_355 = FALSE; break; }
-    		$res_353 = $result;
-    		$pos_353 = $this->pos;
-    		$_352 = NULL;
+    		else { $_362 = FALSE; break; }
+    		$res_360 = $result;
+    		$pos_360 = $this->pos;
+    		$_359 = NULL;
     		do {
     			$matcher = 'match_'.'ComparisonOp'; $key = $matcher; $pos = $this->pos;
     			$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     			if ($subres !== FALSE) {
     				$this->store( $result, $subres );
     			}
-    			else { $_352 = FALSE; break; }
+    			else { $_359 = FALSE; break; }
     			$matcher = 'match_'.'AdditiveExpr'; $key = $matcher; $pos = $this->pos;
     			$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     			if ($subres !== FALSE) {
     				$this->store( $result, $subres );
     			}
-    			else { $_352 = FALSE; break; }
-    			$_352 = TRUE; break;
+    			else { $_359 = FALSE; break; }
+    			$_359 = TRUE; break;
     		}
     		while(0);
-    		if( $_352 === FALSE) {
-    			$result = $res_353;
-    			$this->pos = $pos_353;
-    			unset( $res_353 );
-    			unset( $pos_353 );
+    		if( $_359 === FALSE) {
+    			$result = $res_360;
+    			$this->pos = $pos_360;
+    			unset( $res_360 );
+    			unset( $pos_360 );
     		}
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_355 = TRUE; break;
+    		$_362 = TRUE; break;
     	}
     	while(0);
-    	if( $_355 === TRUE ) { return $this->finalise($result); }
-    	if( $_355 === FALSE) { return FALSE; }
+    	if( $_362 === TRUE ) { return $this->finalise($result); }
+    	if( $_362 === FALSE) { return FALSE; }
     }
 
 
@@ -1971,100 +1985,100 @@ class OODSLParser extends Packrat
     protected $match_ComparisonOp_typestack = array('ComparisonOp');
     function match_ComparisonOp ($stack = array()) {
     	$matchrule = "ComparisonOp"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_379 = NULL;
+    	$_386 = NULL;
     	do {
-    		$res_357 = $result;
-    		$pos_357 = $this->pos;
+    		$res_364 = $result;
+    		$pos_364 = $this->pos;
     		if (( $subres = $this->literal( '==' ) ) !== FALSE) {
     			$result["text"] .= $subres;
-    			$_379 = TRUE; break;
+    			$_386 = TRUE; break;
     		}
-    		$result = $res_357;
-    		$this->pos = $pos_357;
-    		$_377 = NULL;
+    		$result = $res_364;
+    		$this->pos = $pos_364;
+    		$_384 = NULL;
     		do {
-    			$res_359 = $result;
-    			$pos_359 = $this->pos;
+    			$res_366 = $result;
+    			$pos_366 = $this->pos;
     			if (( $subres = $this->literal( '!=' ) ) !== FALSE) {
     				$result["text"] .= $subres;
-    				$_377 = TRUE; break;
+    				$_384 = TRUE; break;
     			}
-    			$result = $res_359;
-    			$this->pos = $pos_359;
-    			$_375 = NULL;
+    			$result = $res_366;
+    			$this->pos = $pos_366;
+    			$_382 = NULL;
     			do {
-    				$res_361 = $result;
-    				$pos_361 = $this->pos;
+    				$res_368 = $result;
+    				$pos_368 = $this->pos;
     				if (( $subres = $this->literal( '<=' ) ) !== FALSE) {
     					$result["text"] .= $subres;
-    					$_375 = TRUE; break;
+    					$_382 = TRUE; break;
     				}
-    				$result = $res_361;
-    				$this->pos = $pos_361;
-    				$_373 = NULL;
+    				$result = $res_368;
+    				$this->pos = $pos_368;
+    				$_380 = NULL;
     				do {
-    					$res_363 = $result;
-    					$pos_363 = $this->pos;
+    					$res_370 = $result;
+    					$pos_370 = $this->pos;
     					if (( $subres = $this->literal( '>=' ) ) !== FALSE) {
     						$result["text"] .= $subres;
-    						$_373 = TRUE; break;
+    						$_380 = TRUE; break;
     					}
-    					$result = $res_363;
-    					$this->pos = $pos_363;
-    					$_371 = NULL;
+    					$result = $res_370;
+    					$this->pos = $pos_370;
+    					$_378 = NULL;
     					do {
-    						$res_365 = $result;
-    						$pos_365 = $this->pos;
+    						$res_372 = $result;
+    						$pos_372 = $this->pos;
     						if (substr($this->string,$this->pos,1) == '<') {
     							$this->pos += 1;
     							$result["text"] .= '<';
-    							$_371 = TRUE; break;
+    							$_378 = TRUE; break;
     						}
-    						$result = $res_365;
-    						$this->pos = $pos_365;
-    						$_369 = NULL;
+    						$result = $res_372;
+    						$this->pos = $pos_372;
+    						$_376 = NULL;
     						do {
     							if (substr($this->string,$this->pos,1) == '>') {
     								$this->pos += 1;
     								$result["text"] .= '>';
     							}
-    							else { $_369 = FALSE; break; }
+    							else { $_376 = FALSE; break; }
     							if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    							$_369 = TRUE; break;
+    							$_376 = TRUE; break;
     						}
     						while(0);
-    						if( $_369 === TRUE ) { $_371 = TRUE; break; }
-    						$result = $res_365;
-    						$this->pos = $pos_365;
-    						$_371 = FALSE; break;
+    						if( $_376 === TRUE ) { $_378 = TRUE; break; }
+    						$result = $res_372;
+    						$this->pos = $pos_372;
+    						$_378 = FALSE; break;
     					}
     					while(0);
-    					if( $_371 === TRUE ) { $_373 = TRUE; break; }
-    					$result = $res_363;
-    					$this->pos = $pos_363;
-    					$_373 = FALSE; break;
+    					if( $_378 === TRUE ) { $_380 = TRUE; break; }
+    					$result = $res_370;
+    					$this->pos = $pos_370;
+    					$_380 = FALSE; break;
     				}
     				while(0);
-    				if( $_373 === TRUE ) { $_375 = TRUE; break; }
-    				$result = $res_361;
-    				$this->pos = $pos_361;
-    				$_375 = FALSE; break;
+    				if( $_380 === TRUE ) { $_382 = TRUE; break; }
+    				$result = $res_368;
+    				$this->pos = $pos_368;
+    				$_382 = FALSE; break;
     			}
     			while(0);
-    			if( $_375 === TRUE ) { $_377 = TRUE; break; }
-    			$result = $res_359;
-    			$this->pos = $pos_359;
-    			$_377 = FALSE; break;
+    			if( $_382 === TRUE ) { $_384 = TRUE; break; }
+    			$result = $res_366;
+    			$this->pos = $pos_366;
+    			$_384 = FALSE; break;
     		}
     		while(0);
-    		if( $_377 === TRUE ) { $_379 = TRUE; break; }
-    		$result = $res_357;
-    		$this->pos = $pos_357;
-    		$_379 = FALSE; break;
+    		if( $_384 === TRUE ) { $_386 = TRUE; break; }
+    		$result = $res_364;
+    		$this->pos = $pos_364;
+    		$_386 = FALSE; break;
     	}
     	while(0);
-    	if( $_379 === TRUE ) { return $this->finalise($result); }
-    	if( $_379 === FALSE) { return FALSE; }
+    	if( $_386 === TRUE ) { return $this->finalise($result); }
+    	if( $_386 === FALSE) { return FALSE; }
     }
 
 
@@ -2072,48 +2086,48 @@ class OODSLParser extends Packrat
     protected $match_AdditiveExpr_typestack = array('AdditiveExpr');
     function match_AdditiveExpr ($stack = array()) {
     	$matchrule = "AdditiveExpr"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_387 = NULL;
+    	$_394 = NULL;
     	do {
     		$matcher = 'match_'.'MultiplicativeExpr'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_387 = FALSE; break; }
+    		else { $_394 = FALSE; break; }
     		while (true) {
-    			$res_385 = $result;
-    			$pos_385 = $this->pos;
-    			$_384 = NULL;
+    			$res_392 = $result;
+    			$pos_392 = $this->pos;
+    			$_391 = NULL;
     			do {
     				$matcher = 'match_'.'AdditiveOp'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
     				}
-    				else { $_384 = FALSE; break; }
+    				else { $_391 = FALSE; break; }
     				$matcher = 'match_'.'MultiplicativeExpr'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
     				}
-    				else { $_384 = FALSE; break; }
-    				$_384 = TRUE; break;
+    				else { $_391 = FALSE; break; }
+    				$_391 = TRUE; break;
     			}
     			while(0);
-    			if( $_384 === FALSE) {
-    				$result = $res_385;
-    				$this->pos = $pos_385;
-    				unset( $res_385 );
-    				unset( $pos_385 );
+    			if( $_391 === FALSE) {
+    				$result = $res_392;
+    				$this->pos = $pos_392;
+    				unset( $res_392 );
+    				unset( $pos_392 );
     				break;
     			}
     		}
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_387 = TRUE; break;
+    		$_394 = TRUE; break;
     	}
     	while(0);
-    	if( $_387 === TRUE ) { return $this->finalise($result); }
-    	if( $_387 === FALSE) { return FALSE; }
+    	if( $_394 === TRUE ) { return $this->finalise($result); }
+    	if( $_394 === FALSE) { return FALSE; }
     }
 
 
@@ -2121,36 +2135,36 @@ class OODSLParser extends Packrat
     protected $match_AdditiveOp_typestack = array('AdditiveOp');
     function match_AdditiveOp ($stack = array()) {
     	$matchrule = "AdditiveOp"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_395 = NULL;
+    	$_402 = NULL;
     	do {
-    		$res_389 = $result;
-    		$pos_389 = $this->pos;
+    		$res_396 = $result;
+    		$pos_396 = $this->pos;
     		if (substr($this->string,$this->pos,1) == '+') {
     			$this->pos += 1;
     			$result["text"] .= '+';
-    			$_395 = TRUE; break;
+    			$_402 = TRUE; break;
     		}
-    		$result = $res_389;
-    		$this->pos = $pos_389;
-    		$_393 = NULL;
+    		$result = $res_396;
+    		$this->pos = $pos_396;
+    		$_400 = NULL;
     		do {
     			if (substr($this->string,$this->pos,1) == '-') {
     				$this->pos += 1;
     				$result["text"] .= '-';
     			}
-    			else { $_393 = FALSE; break; }
+    			else { $_400 = FALSE; break; }
     			if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    			$_393 = TRUE; break;
+    			$_400 = TRUE; break;
     		}
     		while(0);
-    		if( $_393 === TRUE ) { $_395 = TRUE; break; }
-    		$result = $res_389;
-    		$this->pos = $pos_389;
-    		$_395 = FALSE; break;
+    		if( $_400 === TRUE ) { $_402 = TRUE; break; }
+    		$result = $res_396;
+    		$this->pos = $pos_396;
+    		$_402 = FALSE; break;
     	}
     	while(0);
-    	if( $_395 === TRUE ) { return $this->finalise($result); }
-    	if( $_395 === FALSE) { return FALSE; }
+    	if( $_402 === TRUE ) { return $this->finalise($result); }
+    	if( $_402 === FALSE) { return FALSE; }
     }
 
 
@@ -2158,48 +2172,48 @@ class OODSLParser extends Packrat
     protected $match_MultiplicativeExpr_typestack = array('MultiplicativeExpr');
     function match_MultiplicativeExpr ($stack = array()) {
     	$matchrule = "MultiplicativeExpr"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_403 = NULL;
+    	$_410 = NULL;
     	do {
     		$matcher = 'match_'.'UnaryExpr'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_403 = FALSE; break; }
+    		else { $_410 = FALSE; break; }
     		while (true) {
-    			$res_401 = $result;
-    			$pos_401 = $this->pos;
-    			$_400 = NULL;
+    			$res_408 = $result;
+    			$pos_408 = $this->pos;
+    			$_407 = NULL;
     			do {
     				$matcher = 'match_'.'MultiplicativeOp'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
     				}
-    				else { $_400 = FALSE; break; }
+    				else { $_407 = FALSE; break; }
     				$matcher = 'match_'.'UnaryExpr'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
     				}
-    				else { $_400 = FALSE; break; }
-    				$_400 = TRUE; break;
+    				else { $_407 = FALSE; break; }
+    				$_407 = TRUE; break;
     			}
     			while(0);
-    			if( $_400 === FALSE) {
-    				$result = $res_401;
-    				$this->pos = $pos_401;
-    				unset( $res_401 );
-    				unset( $pos_401 );
+    			if( $_407 === FALSE) {
+    				$result = $res_408;
+    				$this->pos = $pos_408;
+    				unset( $res_408 );
+    				unset( $pos_408 );
     				break;
     			}
     		}
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_403 = TRUE; break;
+    		$_410 = TRUE; break;
     	}
     	while(0);
-    	if( $_403 === TRUE ) { return $this->finalise($result); }
-    	if( $_403 === FALSE) { return FALSE; }
+    	if( $_410 === TRUE ) { return $this->finalise($result); }
+    	if( $_410 === FALSE) { return FALSE; }
     }
 
 
@@ -2207,53 +2221,53 @@ class OODSLParser extends Packrat
     protected $match_MultiplicativeOp_typestack = array('MultiplicativeOp');
     function match_MultiplicativeOp ($stack = array()) {
     	$matchrule = "MultiplicativeOp"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_415 = NULL;
+    	$_422 = NULL;
     	do {
-    		$res_405 = $result;
-    		$pos_405 = $this->pos;
+    		$res_412 = $result;
+    		$pos_412 = $this->pos;
     		if (substr($this->string,$this->pos,1) == '*') {
     			$this->pos += 1;
     			$result["text"] .= '*';
-    			$_415 = TRUE; break;
+    			$_422 = TRUE; break;
     		}
-    		$result = $res_405;
-    		$this->pos = $pos_405;
-    		$_413 = NULL;
+    		$result = $res_412;
+    		$this->pos = $pos_412;
+    		$_420 = NULL;
     		do {
-    			$res_407 = $result;
-    			$pos_407 = $this->pos;
+    			$res_414 = $result;
+    			$pos_414 = $this->pos;
     			if (substr($this->string,$this->pos,1) == '/') {
     				$this->pos += 1;
     				$result["text"] .= '/';
-    				$_413 = TRUE; break;
+    				$_420 = TRUE; break;
     			}
-    			$result = $res_407;
-    			$this->pos = $pos_407;
-    			$_411 = NULL;
+    			$result = $res_414;
+    			$this->pos = $pos_414;
+    			$_418 = NULL;
     			do {
     				if (substr($this->string,$this->pos,1) == '%') {
     					$this->pos += 1;
     					$result["text"] .= '%';
     				}
-    				else { $_411 = FALSE; break; }
+    				else { $_418 = FALSE; break; }
     				if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    				$_411 = TRUE; break;
+    				$_418 = TRUE; break;
     			}
     			while(0);
-    			if( $_411 === TRUE ) { $_413 = TRUE; break; }
-    			$result = $res_407;
-    			$this->pos = $pos_407;
-    			$_413 = FALSE; break;
+    			if( $_418 === TRUE ) { $_420 = TRUE; break; }
+    			$result = $res_414;
+    			$this->pos = $pos_414;
+    			$_420 = FALSE; break;
     		}
     		while(0);
-    		if( $_413 === TRUE ) { $_415 = TRUE; break; }
-    		$result = $res_405;
-    		$this->pos = $pos_405;
-    		$_415 = FALSE; break;
+    		if( $_420 === TRUE ) { $_422 = TRUE; break; }
+    		$result = $res_412;
+    		$this->pos = $pos_412;
+    		$_422 = FALSE; break;
     	}
     	while(0);
-    	if( $_415 === TRUE ) { return $this->finalise($result); }
-    	if( $_415 === FALSE) { return FALSE; }
+    	if( $_422 === TRUE ) { return $this->finalise($result); }
+    	if( $_422 === FALSE) { return FALSE; }
     }
 
 
@@ -2261,33 +2275,33 @@ class OODSLParser extends Packrat
     protected $match_UnaryExpr_typestack = array('UnaryExpr');
     function match_UnaryExpr ($stack = array()) {
     	$matchrule = "UnaryExpr"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_420 = NULL;
+    	$_427 = NULL;
     	do {
-    		$res_417 = $result;
-    		$pos_417 = $this->pos;
+    		$res_424 = $result;
+    		$pos_424 = $this->pos;
     		$matcher = 'match_'.'UnaryOp'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
     		else {
-    			$result = $res_417;
-    			$this->pos = $pos_417;
-    			unset( $res_417 );
-    			unset( $pos_417 );
+    			$result = $res_424;
+    			$this->pos = $pos_424;
+    			unset( $res_424 );
+    			unset( $pos_424 );
     		}
     		$matcher = 'match_'.'PrimaryExpr'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_420 = FALSE; break; }
+    		else { $_427 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_420 = TRUE; break;
+    		$_427 = TRUE; break;
     	}
     	while(0);
-    	if( $_420 === TRUE ) { return $this->finalise($result); }
-    	if( $_420 === FALSE) { return FALSE; }
+    	if( $_427 === TRUE ) { return $this->finalise($result); }
+    	if( $_427 === FALSE) { return FALSE; }
     }
 
 
@@ -2295,45 +2309,45 @@ class OODSLParser extends Packrat
     protected $match_UnaryOp_typestack = array('UnaryOp');
     function match_UnaryOp ($stack = array()) {
     	$matchrule = "UnaryOp"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_429 = NULL;
+    	$_436 = NULL;
     	do {
-    		$res_422 = $result;
-    		$pos_422 = $this->pos;
+    		$res_429 = $result;
+    		$pos_429 = $this->pos;
     		if (substr($this->string,$this->pos,1) == '!') {
     			$this->pos += 1;
     			$result["text"] .= '!';
-    			$_429 = TRUE; break;
+    			$_436 = TRUE; break;
     		}
-    		$result = $res_422;
-    		$this->pos = $pos_422;
-    		$_427 = NULL;
+    		$result = $res_429;
+    		$this->pos = $pos_429;
+    		$_434 = NULL;
     		do {
-    			$res_424 = $result;
-    			$pos_424 = $this->pos;
+    			$res_431 = $result;
+    			$pos_431 = $this->pos;
     			if (( $subres = $this->literal( 'not' ) ) !== FALSE) {
     				$result["text"] .= $subres;
-    				$_427 = TRUE; break;
+    				$_434 = TRUE; break;
     			}
-    			$result = $res_424;
-    			$this->pos = $pos_424;
+    			$result = $res_431;
+    			$this->pos = $pos_431;
     			if (substr($this->string,$this->pos,1) == '-') {
     				$this->pos += 1;
     				$result["text"] .= '-';
-    				$_427 = TRUE; break;
+    				$_434 = TRUE; break;
     			}
-    			$result = $res_424;
-    			$this->pos = $pos_424;
-    			$_427 = FALSE; break;
+    			$result = $res_431;
+    			$this->pos = $pos_431;
+    			$_434 = FALSE; break;
     		}
     		while(0);
-    		if( $_427 === TRUE ) { $_429 = TRUE; break; }
-    		$result = $res_422;
-    		$this->pos = $pos_422;
-    		$_429 = FALSE; break;
+    		if( $_434 === TRUE ) { $_436 = TRUE; break; }
+    		$result = $res_429;
+    		$this->pos = $pos_429;
+    		$_436 = FALSE; break;
     	}
     	while(0);
-    	if( $_429 === TRUE ) { return $this->finalise($result); }
-    	if( $_429 === FALSE) { return FALSE; }
+    	if( $_436 === TRUE ) { return $this->finalise($result); }
+    	if( $_436 === FALSE) { return FALSE; }
     }
 
 
@@ -2341,103 +2355,103 @@ class OODSLParser extends Packrat
     protected $match_PrimaryExpr_typestack = array('PrimaryExpr');
     function match_PrimaryExpr ($stack = array()) {
     	$matchrule = "PrimaryExpr"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_450 = NULL;
+    	$_457 = NULL;
     	do {
-    		$res_431 = $result;
-    		$pos_431 = $this->pos;
+    		$res_438 = $result;
+    		$pos_438 = $this->pos;
     		$matcher = 'match_'.'Literal'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
-    			$_450 = TRUE; break;
+    			$_457 = TRUE; break;
     		}
-    		$result = $res_431;
-    		$this->pos = $pos_431;
-    		$_448 = NULL;
+    		$result = $res_438;
+    		$this->pos = $pos_438;
+    		$_455 = NULL;
     		do {
-    			$res_433 = $result;
-    			$pos_433 = $this->pos;
+    			$res_440 = $result;
+    			$pos_440 = $this->pos;
     			$matcher = 'match_'.'MethodCall'; $key = $matcher; $pos = $this->pos;
     			$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     			if ($subres !== FALSE) {
     				$this->store( $result, $subres );
-    				$_448 = TRUE; break;
+    				$_455 = TRUE; break;
     			}
-    			$result = $res_433;
-    			$this->pos = $pos_433;
-    			$_446 = NULL;
+    			$result = $res_440;
+    			$this->pos = $pos_440;
+    			$_453 = NULL;
     			do {
-    				$res_435 = $result;
-    				$pos_435 = $this->pos;
+    				$res_442 = $result;
+    				$pos_442 = $this->pos;
     				$matcher = 'match_'.'PropertyAccess'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
-    					$_446 = TRUE; break;
+    					$_453 = TRUE; break;
     				}
-    				$result = $res_435;
-    				$this->pos = $pos_435;
-    				$_444 = NULL;
+    				$result = $res_442;
+    				$this->pos = $pos_442;
+    				$_451 = NULL;
     				do {
-    					$res_437 = $result;
-    					$pos_437 = $this->pos;
+    					$res_444 = $result;
+    					$pos_444 = $this->pos;
     					$matcher = 'match_'.'ThisKeyword'; $key = $matcher; $pos = $this->pos;
     					$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     					if ($subres !== FALSE) {
     						$this->store( $result, $subres );
-    						$_444 = TRUE; break;
+    						$_451 = TRUE; break;
     					}
-    					$result = $res_437;
-    					$this->pos = $pos_437;
-    					$_442 = NULL;
+    					$result = $res_444;
+    					$this->pos = $pos_444;
+    					$_449 = NULL;
     					do {
-    						$res_439 = $result;
-    						$pos_439 = $this->pos;
+    						$res_446 = $result;
+    						$pos_446 = $this->pos;
     						$matcher = 'match_'.'ParenExpr'; $key = $matcher; $pos = $this->pos;
     						$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     						if ($subres !== FALSE) {
     							$this->store( $result, $subres );
-    							$_442 = TRUE; break;
+    							$_449 = TRUE; break;
     						}
-    						$result = $res_439;
-    						$this->pos = $pos_439;
+    						$result = $res_446;
+    						$this->pos = $pos_446;
     						$matcher = 'match_'.'SetLiteral'; $key = $matcher; $pos = $this->pos;
     						$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     						if ($subres !== FALSE) {
     							$this->store( $result, $subres );
-    							$_442 = TRUE; break;
+    							$_449 = TRUE; break;
     						}
-    						$result = $res_439;
-    						$this->pos = $pos_439;
-    						$_442 = FALSE; break;
+    						$result = $res_446;
+    						$this->pos = $pos_446;
+    						$_449 = FALSE; break;
     					}
     					while(0);
-    					if( $_442 === TRUE ) { $_444 = TRUE; break; }
-    					$result = $res_437;
-    					$this->pos = $pos_437;
-    					$_444 = FALSE; break;
+    					if( $_449 === TRUE ) { $_451 = TRUE; break; }
+    					$result = $res_444;
+    					$this->pos = $pos_444;
+    					$_451 = FALSE; break;
     				}
     				while(0);
-    				if( $_444 === TRUE ) { $_446 = TRUE; break; }
-    				$result = $res_435;
-    				$this->pos = $pos_435;
-    				$_446 = FALSE; break;
+    				if( $_451 === TRUE ) { $_453 = TRUE; break; }
+    				$result = $res_442;
+    				$this->pos = $pos_442;
+    				$_453 = FALSE; break;
     			}
     			while(0);
-    			if( $_446 === TRUE ) { $_448 = TRUE; break; }
-    			$result = $res_433;
-    			$this->pos = $pos_433;
-    			$_448 = FALSE; break;
+    			if( $_453 === TRUE ) { $_455 = TRUE; break; }
+    			$result = $res_440;
+    			$this->pos = $pos_440;
+    			$_455 = FALSE; break;
     		}
     		while(0);
-    		if( $_448 === TRUE ) { $_450 = TRUE; break; }
-    		$result = $res_431;
-    		$this->pos = $pos_431;
-    		$_450 = FALSE; break;
+    		if( $_455 === TRUE ) { $_457 = TRUE; break; }
+    		$result = $res_438;
+    		$this->pos = $pos_438;
+    		$_457 = FALSE; break;
     	}
     	while(0);
-    	if( $_450 === TRUE ) { return $this->finalise($result); }
-    	if( $_450 === FALSE) { return FALSE; }
+    	if( $_457 === TRUE ) { return $this->finalise($result); }
+    	if( $_457 === FALSE) { return FALSE; }
     }
 
 
@@ -2445,30 +2459,30 @@ class OODSLParser extends Packrat
     protected $match_ParenExpr_typestack = array('ParenExpr');
     function match_ParenExpr ($stack = array()) {
     	$matchrule = "ParenExpr"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_456 = NULL;
+    	$_463 = NULL;
     	do {
     		if (substr($this->string,$this->pos,1) == '(') {
     			$this->pos += 1;
     			$result["text"] .= '(';
     		}
-    		else { $_456 = FALSE; break; }
+    		else { $_463 = FALSE; break; }
     		$matcher = 'match_'.'Expression'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_456 = FALSE; break; }
+    		else { $_463 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == ')') {
     			$this->pos += 1;
     			$result["text"] .= ')';
     		}
-    		else { $_456 = FALSE; break; }
+    		else { $_463 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_456 = TRUE; break;
+    		$_463 = TRUE; break;
     	}
     	while(0);
-    	if( $_456 === TRUE ) { return $this->finalise($result); }
-    	if( $_456 === FALSE) { return FALSE; }
+    	if( $_463 === TRUE ) { return $this->finalise($result); }
+    	if( $_463 === FALSE) { return FALSE; }
     }
 
 
@@ -2488,43 +2502,43 @@ class OODSLParser extends Packrat
     protected $match_MethodCall_typestack = array('MethodCall');
     function match_MethodCall ($stack = array()) {
     	$matchrule = "MethodCall"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_464 = NULL;
+    	$_471 = NULL;
     	do {
     		$matcher = 'match_'.'QualifiedName'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_464 = FALSE; break; }
+    		else { $_471 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == '(') {
     			$this->pos += 1;
     			$result["text"] .= '(';
     		}
-    		else { $_464 = FALSE; break; }
-    		$res_461 = $result;
-    		$pos_461 = $this->pos;
+    		else { $_471 = FALSE; break; }
+    		$res_468 = $result;
+    		$pos_468 = $this->pos;
     		$matcher = 'match_'.'ArgList'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
     		else {
-    			$result = $res_461;
-    			$this->pos = $pos_461;
-    			unset( $res_461 );
-    			unset( $pos_461 );
+    			$result = $res_468;
+    			$this->pos = $pos_468;
+    			unset( $res_468 );
+    			unset( $pos_468 );
     		}
     		if (substr($this->string,$this->pos,1) == ')') {
     			$this->pos += 1;
     			$result["text"] .= ')';
     		}
-    		else { $_464 = FALSE; break; }
+    		else { $_471 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_464 = TRUE; break;
+    		$_471 = TRUE; break;
     	}
     	while(0);
-    	if( $_464 === TRUE ) { return $this->finalise($result); }
-    	if( $_464 === FALSE) { return FALSE; }
+    	if( $_471 === TRUE ) { return $this->finalise($result); }
+    	if( $_471 === FALSE) { return FALSE; }
     }
 
 
@@ -2532,20 +2546,20 @@ class OODSLParser extends Packrat
     protected $match_PropertyAccess_typestack = array('PropertyAccess');
     function match_PropertyAccess ($stack = array()) {
     	$matchrule = "PropertyAccess"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_468 = NULL;
+    	$_475 = NULL;
     	do {
     		$matcher = 'match_'.'QualifiedName'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_468 = FALSE; break; }
+    		else { $_475 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_468 = TRUE; break;
+    		$_475 = TRUE; break;
     	}
     	while(0);
-    	if( $_468 === TRUE ) { return $this->finalise($result); }
-    	if( $_468 === FALSE) { return FALSE; }
+    	if( $_475 === TRUE ) { return $this->finalise($result); }
+    	if( $_475 === FALSE) { return FALSE; }
     }
 
 
@@ -2553,47 +2567,47 @@ class OODSLParser extends Packrat
     protected $match_QualifiedName_typestack = array('QualifiedName');
     function match_QualifiedName ($stack = array()) {
     	$matchrule = "QualifiedName"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_476 = NULL;
+    	$_483 = NULL;
     	do {
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_476 = FALSE; break; }
+    		else { $_483 = FALSE; break; }
     		while (true) {
-    			$res_474 = $result;
-    			$pos_474 = $this->pos;
-    			$_473 = NULL;
+    			$res_481 = $result;
+    			$pos_481 = $this->pos;
+    			$_480 = NULL;
     			do {
     				if (substr($this->string,$this->pos,1) == '.') {
     					$this->pos += 1;
     					$result["text"] .= '.';
     				}
-    				else { $_473 = FALSE; break; }
+    				else { $_480 = FALSE; break; }
     				$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
     				}
-    				else { $_473 = FALSE; break; }
-    				$_473 = TRUE; break;
+    				else { $_480 = FALSE; break; }
+    				$_480 = TRUE; break;
     			}
     			while(0);
-    			if( $_473 === FALSE) {
-    				$result = $res_474;
-    				$this->pos = $pos_474;
-    				unset( $res_474 );
-    				unset( $pos_474 );
+    			if( $_480 === FALSE) {
+    				$result = $res_481;
+    				$this->pos = $pos_481;
+    				unset( $res_481 );
+    				unset( $pos_481 );
     				break;
     			}
     		}
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_476 = TRUE; break;
+    		$_483 = TRUE; break;
     	}
     	while(0);
-    	if( $_476 === TRUE ) { return $this->finalise($result); }
-    	if( $_476 === FALSE) { return FALSE; }
+    	if( $_483 === TRUE ) { return $this->finalise($result); }
+    	if( $_483 === FALSE) { return FALSE; }
     }
 
 
@@ -2601,47 +2615,47 @@ class OODSLParser extends Packrat
     protected $match_ArgList_typestack = array('ArgList');
     function match_ArgList ($stack = array()) {
     	$matchrule = "ArgList"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_484 = NULL;
+    	$_491 = NULL;
     	do {
     		$matcher = 'match_'.'Expression'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_484 = FALSE; break; }
+    		else { $_491 = FALSE; break; }
     		while (true) {
-    			$res_482 = $result;
-    			$pos_482 = $this->pos;
-    			$_481 = NULL;
+    			$res_489 = $result;
+    			$pos_489 = $this->pos;
+    			$_488 = NULL;
     			do {
     				if (substr($this->string,$this->pos,1) == ',') {
     					$this->pos += 1;
     					$result["text"] .= ',';
     				}
-    				else { $_481 = FALSE; break; }
+    				else { $_488 = FALSE; break; }
     				$matcher = 'match_'.'Expression'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
     				}
-    				else { $_481 = FALSE; break; }
-    				$_481 = TRUE; break;
+    				else { $_488 = FALSE; break; }
+    				$_488 = TRUE; break;
     			}
     			while(0);
-    			if( $_481 === FALSE) {
-    				$result = $res_482;
-    				$this->pos = $pos_482;
-    				unset( $res_482 );
-    				unset( $pos_482 );
+    			if( $_488 === FALSE) {
+    				$result = $res_489;
+    				$this->pos = $pos_489;
+    				unset( $res_489 );
+    				unset( $pos_489 );
     				break;
     			}
     		}
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_484 = TRUE; break;
+    		$_491 = TRUE; break;
     	}
     	while(0);
-    	if( $_484 === TRUE ) { return $this->finalise($result); }
-    	if( $_484 === FALSE) { return FALSE; }
+    	if( $_491 === TRUE ) { return $this->finalise($result); }
+    	if( $_491 === FALSE) { return FALSE; }
     }
 
 
@@ -2649,37 +2663,37 @@ class OODSLParser extends Packrat
     protected $match_SetLiteral_typestack = array('SetLiteral');
     function match_SetLiteral ($stack = array()) {
     	$matchrule = "SetLiteral"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_490 = NULL;
+    	$_497 = NULL;
     	do {
     		if (substr($this->string,$this->pos,1) == '{') {
     			$this->pos += 1;
     			$result["text"] .= '{';
     		}
-    		else { $_490 = FALSE; break; }
-    		$res_487 = $result;
-    		$pos_487 = $this->pos;
+    		else { $_497 = FALSE; break; }
+    		$res_494 = $result;
+    		$pos_494 = $this->pos;
     		$matcher = 'match_'.'ElemList'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
     		else {
-    			$result = $res_487;
-    			$this->pos = $pos_487;
-    			unset( $res_487 );
-    			unset( $pos_487 );
+    			$result = $res_494;
+    			$this->pos = $pos_494;
+    			unset( $res_494 );
+    			unset( $pos_494 );
     		}
     		if (substr($this->string,$this->pos,1) == '}') {
     			$this->pos += 1;
     			$result["text"] .= '}';
     		}
-    		else { $_490 = FALSE; break; }
+    		else { $_497 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_490 = TRUE; break;
+    		$_497 = TRUE; break;
     	}
     	while(0);
-    	if( $_490 === TRUE ) { return $this->finalise($result); }
-    	if( $_490 === FALSE) { return FALSE; }
+    	if( $_497 === TRUE ) { return $this->finalise($result); }
+    	if( $_497 === FALSE) { return FALSE; }
     }
 
 
@@ -2687,47 +2701,47 @@ class OODSLParser extends Packrat
     protected $match_ElemList_typestack = array('ElemList');
     function match_ElemList ($stack = array()) {
     	$matchrule = "ElemList"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_498 = NULL;
+    	$_505 = NULL;
     	do {
     		$matcher = 'match_'.'Expression'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_498 = FALSE; break; }
+    		else { $_505 = FALSE; break; }
     		while (true) {
-    			$res_496 = $result;
-    			$pos_496 = $this->pos;
-    			$_495 = NULL;
+    			$res_503 = $result;
+    			$pos_503 = $this->pos;
+    			$_502 = NULL;
     			do {
     				if (substr($this->string,$this->pos,1) == ',') {
     					$this->pos += 1;
     					$result["text"] .= ',';
     				}
-    				else { $_495 = FALSE; break; }
+    				else { $_502 = FALSE; break; }
     				$matcher = 'match_'.'Expression'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
     				}
-    				else { $_495 = FALSE; break; }
-    				$_495 = TRUE; break;
+    				else { $_502 = FALSE; break; }
+    				$_502 = TRUE; break;
     			}
     			while(0);
-    			if( $_495 === FALSE) {
-    				$result = $res_496;
-    				$this->pos = $pos_496;
-    				unset( $res_496 );
-    				unset( $pos_496 );
+    			if( $_502 === FALSE) {
+    				$result = $res_503;
+    				$this->pos = $pos_503;
+    				unset( $res_503 );
+    				unset( $pos_503 );
     				break;
     			}
     		}
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_498 = TRUE; break;
+    		$_505 = TRUE; break;
     	}
     	while(0);
-    	if( $_498 === TRUE ) { return $this->finalise($result); }
-    	if( $_498 === FALSE) { return FALSE; }
+    	if( $_505 === TRUE ) { return $this->finalise($result); }
+    	if( $_505 === FALSE) { return FALSE; }
     }
 
 
@@ -2735,85 +2749,85 @@ class OODSLParser extends Packrat
     protected $match_Literal_typestack = array('Literal');
     function match_Literal ($stack = array()) {
     	$matchrule = "Literal"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_515 = NULL;
+    	$_522 = NULL;
     	do {
-    		$res_500 = $result;
-    		$pos_500 = $this->pos;
+    		$res_507 = $result;
+    		$pos_507 = $this->pos;
     		$matcher = 'match_'.'String'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
-    			$_515 = TRUE; break;
+    			$_522 = TRUE; break;
     		}
-    		$result = $res_500;
-    		$this->pos = $pos_500;
-    		$_513 = NULL;
+    		$result = $res_507;
+    		$this->pos = $pos_507;
+    		$_520 = NULL;
     		do {
-    			$res_502 = $result;
-    			$pos_502 = $this->pos;
+    			$res_509 = $result;
+    			$pos_509 = $this->pos;
     			$matcher = 'match_'.'Float'; $key = $matcher; $pos = $this->pos;
     			$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     			if ($subres !== FALSE) {
     				$this->store( $result, $subres );
-    				$_513 = TRUE; break;
+    				$_520 = TRUE; break;
     			}
-    			$result = $res_502;
-    			$this->pos = $pos_502;
-    			$_511 = NULL;
+    			$result = $res_509;
+    			$this->pos = $pos_509;
+    			$_518 = NULL;
     			do {
-    				$res_504 = $result;
-    				$pos_504 = $this->pos;
+    				$res_511 = $result;
+    				$pos_511 = $this->pos;
     				$matcher = 'match_'.'Number'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
-    					$_511 = TRUE; break;
+    					$_518 = TRUE; break;
     				}
-    				$result = $res_504;
-    				$this->pos = $pos_504;
-    				$_509 = NULL;
+    				$result = $res_511;
+    				$this->pos = $pos_511;
+    				$_516 = NULL;
     				do {
-    					$res_506 = $result;
-    					$pos_506 = $this->pos;
+    					$res_513 = $result;
+    					$pos_513 = $this->pos;
     					$matcher = 'match_'.'Boolean'; $key = $matcher; $pos = $this->pos;
     					$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     					if ($subres !== FALSE) {
     						$this->store( $result, $subres );
-    						$_509 = TRUE; break;
+    						$_516 = TRUE; break;
     					}
-    					$result = $res_506;
-    					$this->pos = $pos_506;
+    					$result = $res_513;
+    					$this->pos = $pos_513;
     					$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     					$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     					if ($subres !== FALSE) {
     						$this->store( $result, $subres );
-    						$_509 = TRUE; break;
+    						$_516 = TRUE; break;
     					}
-    					$result = $res_506;
-    					$this->pos = $pos_506;
-    					$_509 = FALSE; break;
+    					$result = $res_513;
+    					$this->pos = $pos_513;
+    					$_516 = FALSE; break;
     				}
     				while(0);
-    				if( $_509 === TRUE ) { $_511 = TRUE; break; }
-    				$result = $res_504;
-    				$this->pos = $pos_504;
-    				$_511 = FALSE; break;
+    				if( $_516 === TRUE ) { $_518 = TRUE; break; }
+    				$result = $res_511;
+    				$this->pos = $pos_511;
+    				$_518 = FALSE; break;
     			}
     			while(0);
-    			if( $_511 === TRUE ) { $_513 = TRUE; break; }
-    			$result = $res_502;
-    			$this->pos = $pos_502;
-    			$_513 = FALSE; break;
+    			if( $_518 === TRUE ) { $_520 = TRUE; break; }
+    			$result = $res_509;
+    			$this->pos = $pos_509;
+    			$_520 = FALSE; break;
     		}
     		while(0);
-    		if( $_513 === TRUE ) { $_515 = TRUE; break; }
-    		$result = $res_500;
-    		$this->pos = $pos_500;
-    		$_515 = FALSE; break;
+    		if( $_520 === TRUE ) { $_522 = TRUE; break; }
+    		$result = $res_507;
+    		$this->pos = $pos_507;
+    		$_522 = FALSE; break;
     	}
     	while(0);
-    	if( $_515 === TRUE ) { return $this->finalise($result); }
-    	if( $_515 === FALSE) { return FALSE; }
+    	if( $_522 === TRUE ) { return $this->finalise($result); }
+    	if( $_522 === FALSE) { return FALSE; }
     }
 
 
@@ -2821,16 +2835,16 @@ class OODSLParser extends Packrat
     protected $match_String_typestack = array('String');
     function match_String ($stack = array()) {
     	$matchrule = "String"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_519 = NULL;
+    	$_526 = NULL;
     	do {
     		if (( $subres = $this->rx( '/"[^"]*"/' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_519 = FALSE; break; }
+    		else { $_526 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_519 = TRUE; break;
+    		$_526 = TRUE; break;
     	}
     	while(0);
-    	if( $_519 === TRUE ) { return $this->finalise($result); }
-    	if( $_519 === FALSE) { return FALSE; }
+    	if( $_526 === TRUE ) { return $this->finalise($result); }
+    	if( $_526 === FALSE) { return FALSE; }
     }
 
 
@@ -2838,16 +2852,16 @@ class OODSLParser extends Packrat
     protected $match_Float_typestack = array('Float');
     function match_Float ($stack = array()) {
     	$matchrule = "Float"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_523 = NULL;
+    	$_530 = NULL;
     	do {
     		if (( $subres = $this->rx( '/[0-9]+\.[0-9]+/' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_523 = FALSE; break; }
+    		else { $_530 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_523 = TRUE; break;
+    		$_530 = TRUE; break;
     	}
     	while(0);
-    	if( $_523 === TRUE ) { return $this->finalise($result); }
-    	if( $_523 === FALSE) { return FALSE; }
+    	if( $_530 === TRUE ) { return $this->finalise($result); }
+    	if( $_530 === FALSE) { return FALSE; }
     }
 
 
@@ -2867,27 +2881,27 @@ class OODSLParser extends Packrat
     protected $match_Boolean_typestack = array('Boolean');
     function match_Boolean ($stack = array()) {
     	$matchrule = "Boolean"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_529 = NULL;
+    	$_536 = NULL;
     	do {
-    		$res_526 = $result;
-    		$pos_526 = $this->pos;
+    		$res_533 = $result;
+    		$pos_533 = $this->pos;
     		if (( $subres = $this->literal( 'true' ) ) !== FALSE) {
     			$result["text"] .= $subres;
-    			$_529 = TRUE; break;
+    			$_536 = TRUE; break;
     		}
-    		$result = $res_526;
-    		$this->pos = $pos_526;
+    		$result = $res_533;
+    		$this->pos = $pos_533;
     		if (( $subres = $this->literal( 'false' ) ) !== FALSE) {
     			$result["text"] .= $subres;
-    			$_529 = TRUE; break;
+    			$_536 = TRUE; break;
     		}
-    		$result = $res_526;
-    		$this->pos = $pos_526;
-    		$_529 = FALSE; break;
+    		$result = $res_533;
+    		$this->pos = $pos_533;
+    		$_536 = FALSE; break;
     	}
     	while(0);
-    	if( $_529 === TRUE ) { return $this->finalise($result); }
-    	if( $_529 === FALSE) { return FALSE; }
+    	if( $_536 === TRUE ) { return $this->finalise($result); }
+    	if( $_536 === FALSE) { return FALSE; }
     }
 
 
@@ -2907,68 +2921,32 @@ class OODSLParser extends Packrat
     protected $match_ImportDecl_typestack = array('ImportDecl');
     function match_ImportDecl ($stack = array()) {
     	$matchrule = "ImportDecl"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_537 = NULL;
+    	$_544 = NULL;
     	do {
     		if (( $subres = $this->literal( 'import' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_537 = FALSE; break; }
+    		else { $_544 = FALSE; break; }
     		$matcher = 'match_'.'QualifiedName'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_537 = FALSE; break; }
-    		$res_534 = $result;
-    		$pos_534 = $this->pos;
+    		else { $_544 = FALSE; break; }
+    		$res_541 = $result;
+    		$pos_541 = $this->pos;
     		$matcher = 'match_'.'ImportList'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
     		else {
-    			$result = $res_534;
-    			$this->pos = $pos_534;
-    			unset( $res_534 );
-    			unset( $pos_534 );
+    			$result = $res_541;
+    			$this->pos = $pos_541;
+    			unset( $res_541 );
+    			unset( $pos_541 );
     		}
     		if (substr($this->string,$this->pos,1) == ';') {
     			$this->pos += 1;
     			$result["text"] .= ';';
-    		}
-    		else { $_537 = FALSE; break; }
-    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_537 = TRUE; break;
-    	}
-    	while(0);
-    	if( $_537 === TRUE ) { return $this->finalise($result); }
-    	if( $_537 === FALSE) { return FALSE; }
-    }
-
-
-    /* ImportList: "." "{" IdentList "}" > */
-    protected $match_ImportList_typestack = array('ImportList');
-    function match_ImportList ($stack = array()) {
-    	$matchrule = "ImportList"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_544 = NULL;
-    	do {
-    		if (substr($this->string,$this->pos,1) == '.') {
-    			$this->pos += 1;
-    			$result["text"] .= '.';
-    		}
-    		else { $_544 = FALSE; break; }
-    		if (substr($this->string,$this->pos,1) == '{') {
-    			$this->pos += 1;
-    			$result["text"] .= '{';
-    		}
-    		else { $_544 = FALSE; break; }
-    		$matcher = 'match_'.'IdentList'; $key = $matcher; $pos = $this->pos;
-    		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
-    		if ($subres !== FALSE) {
-    			$this->store( $result, $subres );
-    		}
-    		else { $_544 = FALSE; break; }
-    		if (substr($this->string,$this->pos,1) == '}') {
-    			$this->pos += 1;
-    			$result["text"] .= '}';
     		}
     		else { $_544 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
@@ -2980,31 +2958,67 @@ class OODSLParser extends Packrat
     }
 
 
-    /* ExportDecl: "export" IdentList ";" > */
-    protected $match_ExportDecl_typestack = array('ExportDecl');
-    function match_ExportDecl ($stack = array()) {
-    	$matchrule = "ExportDecl"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_550 = NULL;
+    /* ImportList: "." "{" IdentList "}" > */
+    protected $match_ImportList_typestack = array('ImportList');
+    function match_ImportList ($stack = array()) {
+    	$matchrule = "ImportList"; $result = $this->construct($matchrule, $matchrule, null);
+    	$_551 = NULL;
     	do {
-    		if (( $subres = $this->literal( 'export' ) ) !== FALSE) { $result["text"] .= $subres; }
-    		else { $_550 = FALSE; break; }
+    		if (substr($this->string,$this->pos,1) == '.') {
+    			$this->pos += 1;
+    			$result["text"] .= '.';
+    		}
+    		else { $_551 = FALSE; break; }
+    		if (substr($this->string,$this->pos,1) == '{') {
+    			$this->pos += 1;
+    			$result["text"] .= '{';
+    		}
+    		else { $_551 = FALSE; break; }
     		$matcher = 'match_'.'IdentList'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_550 = FALSE; break; }
+    		else { $_551 = FALSE; break; }
+    		if (substr($this->string,$this->pos,1) == '}') {
+    			$this->pos += 1;
+    			$result["text"] .= '}';
+    		}
+    		else { $_551 = FALSE; break; }
+    		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
+    		$_551 = TRUE; break;
+    	}
+    	while(0);
+    	if( $_551 === TRUE ) { return $this->finalise($result); }
+    	if( $_551 === FALSE) { return FALSE; }
+    }
+
+
+    /* ExportDecl: "export" IdentList ";" > */
+    protected $match_ExportDecl_typestack = array('ExportDecl');
+    function match_ExportDecl ($stack = array()) {
+    	$matchrule = "ExportDecl"; $result = $this->construct($matchrule, $matchrule, null);
+    	$_557 = NULL;
+    	do {
+    		if (( $subres = $this->literal( 'export' ) ) !== FALSE) { $result["text"] .= $subres; }
+    		else { $_557 = FALSE; break; }
+    		$matcher = 'match_'.'IdentList'; $key = $matcher; $pos = $this->pos;
+    		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
+    		if ($subres !== FALSE) {
+    			$this->store( $result, $subres );
+    		}
+    		else { $_557 = FALSE; break; }
     		if (substr($this->string,$this->pos,1) == ';') {
     			$this->pos += 1;
     			$result["text"] .= ';';
     		}
-    		else { $_550 = FALSE; break; }
+    		else { $_557 = FALSE; break; }
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_550 = TRUE; break;
+    		$_557 = TRUE; break;
     	}
     	while(0);
-    	if( $_550 === TRUE ) { return $this->finalise($result); }
-    	if( $_550 === FALSE) { return FALSE; }
+    	if( $_557 === TRUE ) { return $this->finalise($result); }
+    	if( $_557 === FALSE) { return FALSE; }
     }
 
 
@@ -3012,54 +3026,54 @@ class OODSLParser extends Packrat
     protected $match_IdentList_typestack = array('IdentList');
     function match_IdentList ($stack = array()) {
     	$matchrule = "IdentList"; $result = $this->construct($matchrule, $matchrule, null);
-    	$_558 = NULL;
+    	$_565 = NULL;
     	do {
     		$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     		if ($subres !== FALSE) {
     			$this->store( $result, $subres );
     		}
-    		else { $_558 = FALSE; break; }
+    		else { $_565 = FALSE; break; }
     		while (true) {
-    			$res_556 = $result;
-    			$pos_556 = $this->pos;
-    			$_555 = NULL;
+    			$res_563 = $result;
+    			$pos_563 = $this->pos;
+    			$_562 = NULL;
     			do {
     				if (substr($this->string,$this->pos,1) == ',') {
     					$this->pos += 1;
     					$result["text"] .= ',';
     				}
-    				else { $_555 = FALSE; break; }
+    				else { $_562 = FALSE; break; }
     				$matcher = 'match_'.'Identifier'; $key = $matcher; $pos = $this->pos;
     				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
     				if ($subres !== FALSE) {
     					$this->store( $result, $subres );
     				}
-    				else { $_555 = FALSE; break; }
-    				$_555 = TRUE; break;
+    				else { $_562 = FALSE; break; }
+    				$_562 = TRUE; break;
     			}
     			while(0);
-    			if( $_555 === FALSE) {
-    				$result = $res_556;
-    				$this->pos = $pos_556;
-    				unset( $res_556 );
-    				unset( $pos_556 );
+    			if( $_562 === FALSE) {
+    				$result = $res_563;
+    				$this->pos = $pos_563;
+    				unset( $res_563 );
+    				unset( $pos_563 );
     				break;
     			}
     		}
     		if (( $subres = $this->whitespace(  ) ) !== FALSE) { $result["text"] .= $subres; }
-    		$_558 = TRUE; break;
+    		$_565 = TRUE; break;
     	}
     	while(0);
-    	if( $_558 === TRUE ) { return $this->finalise($result); }
-    	if( $_558 === FALSE) { return FALSE; }
+    	if( $_565 === TRUE ) { return $this->finalise($result); }
+    	if( $_565 === FALSE) { return FALSE; }
     }
 
 
 
 
     function whitespace() {
-        $matched = preg_match( '/[ \t]+/', $this->string, $matches, PREG_OFFSET_CAPTURE, $this->pos ) ;
+        $matched = preg_match( '/[ \n\r\t]+/', $this->string, $matches, PREG_OFFSET_CAPTURE, $this->pos ) ;
         if ( $matched && $matches[0][1] == $this->pos ) {
             $this->pos += strlen( $matches[0][0] );
             return ' ' ;
@@ -3111,6 +3125,7 @@ class OODSLParser extends Packrat
 
     function ClassDecl__finalise(&$result)
     {
+        print_r($result);
 //        $name = new IdentifierNode($result['Identifier']);
 //        $inheritance = $result['Inheritance'] ?? null;
 //        return new ClassNode($name, $inheritance, $result['ClassBody']);

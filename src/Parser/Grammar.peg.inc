@@ -83,16 +83,26 @@ class OODSLParser extends Packrat
     ModuleStatement: ClassDecl | ObjectDecl | MethodDecl | RuleDecl | ExportDecl
 
     # Class declaration - simplified
-    ClassDecl: "class" Identifier Inheritance? "{" ClassBody "}" >
+    ClassDecl: "class" > id:Identifier > inh:Inheritance? > "{" > ClassBody > "}" >
+        function id(&$result, $sub ) {
+            print_r($sub);
+            print_r($result);
+            print_r("----\n");
+        }
+        function inh(&$result, $sub ) {
+            print_r($sub);
+            print_r($result);
+            print_r("----\n");
+        }
 
-    Inheritance: "inherits" ( "structure" )? "from" Identifier  >
+    Inheritance: "inherits" > ( "structure" )? > "from" > inheritance:Identifier  >
 
-    ClassBody: ClassMember* >
+    ClassBody: ClassMember*
 
     ClassMember: FieldDecl | MethodSignature
 
     # Field declaration - simplified
-    FieldDecl: TypeSpec Identifier Constraint? ";" >
+    FieldDecl: TypeSpec > Identifier > Constraint? ";" >
 
     # Type specifications
     TypeSpec: CollectionType | PrimitiveType | UserType
@@ -224,7 +234,7 @@ class OODSLParser extends Packrat
     */
 
     function whitespace() {
-        $matched = preg_match( '/[ \t]+/', $this->string, $matches, PREG_OFFSET_CAPTURE, $this->pos ) ;
+        $matched = preg_match( '/[ \n\r\t]+/', $this->string, $matches, PREG_OFFSET_CAPTURE, $this->pos ) ;
         if ( $matched && $matches[0][1] == $this->pos ) {
             $this->pos += strlen( $matches[0][0] );
             return ' ' ;
@@ -276,6 +286,7 @@ class OODSLParser extends Packrat
 
     function ClassDecl__finalise(&$result)
     {
+        print_r($result);
 //        $name = new IdentifierNode($result['Identifier']);
 //        $inheritance = $result['Inheritance'] ?? null;
 //        return new ClassNode($name, $inheritance, $result['ClassBody']);
