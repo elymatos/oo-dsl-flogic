@@ -3,7 +3,7 @@
         'name' => 'your-org/oo-dsl-flogic',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '3d2e9d4a9347dd763f5abf217c4bff6338d6f434',
+        'reference' => '99ff7eb4d088c05778ab4e8d70a1cdbefca88d6a',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'myclabs/deep-copy' => array(
-            'pretty_version' => '1.13.1',
-            'version' => '1.13.1.0',
-            'reference' => '1720ddd719e16cf0db4eb1c6eca108031636d46c',
+            'pretty_version' => '1.13.2',
+            'version' => '1.13.2.0',
+            'reference' => 'd25e62e636b0a9b01e3bdebb7823b474876dd829',
             'type' => 'library',
             'install_path' => __DIR__ . '/../myclabs/deep-copy',
             'aliases' => array(),
@@ -361,7 +361,7 @@
         'your-org/oo-dsl-flogic' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '3d2e9d4a9347dd763f5abf217c4bff6338d6f434',
+            'reference' => '99ff7eb4d088c05778ab4e8d70a1cdbefca88d6a',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

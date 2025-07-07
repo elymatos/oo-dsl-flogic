@@ -1,4 +1,3 @@
-module PersonDomain {
-
+class Person inherits from LivingBeing {
+    string name;
 }
-
